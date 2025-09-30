@@ -1,0 +1,138 @@
+:root {
+  --modal-bg: var(--paper);
+  --modal-fg: var(--ink);
+  --modal-overlay: rgba(0, 0, 0, 0.45);
+}
+
+/* ===== Backdrop ===== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+      1200px 600px at 70% 10%,
+      rgba(230, 57, 70, 0.08),
+      transparent 40%
+    ),
+    var(--modal-overlay);
+  display: grid;
+  place-items: center;
+  z-index: 3000; /* más alto que la UI, debajo de SweetAlert2 (5000) */
+  animation: fadeIn 0.18s ease-out;
+  backdrop-filter: blur(3px);
+}
+
+/* ===== Panel ===== */
+.modal-panel {
+  width: min(96vw, 720px); /* más ancho en escritorio */
+  max-height: 90vh;
+  background: var(--modal-bg);
+  color: var(--modal-fg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-3);
+  border: 1px solid var(--line);
+  transform: translateY(8px) scale(0.98);
+  animation: popIn 0.18s ease-out forwards;
+  display: flex;
+  flex-direction: column;
+  z-index: 3001; /* encima del backdrop */
+}
+
+/* ===== Header ===== */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.modal-title {
+  margin: 0;
+  font-weight: var(--title-w);
+  font-size: 20px;
+  color: var(--brand-600);
+}
+
+.modal-close {
+  border: none;
+  background: var(--brand-600);
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: var(--radius-xs);
+  transition: background var(--t-base);
+}
+.modal-close:hover {
+  background: #a00000;
+}
+
+/* ===== Cuerpo ===== */
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.modal-body label {
+  font-size: 13px;
+  color: var(--ink-2);
+  font-weight: var(--ui-w);
+}
+
+.modal-body input,
+.modal-body select,
+.modal-body textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid #ddd;
+  box-sizing: border-box;
+}
+
+.modal-body select {
+  background: #fff;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23333' viewBox='0 0 24 24'%3E<path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  cursor: pointer;
+}
+
+/* ===== Footer / Actions ===== */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 14px 20px;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+/* ===== Animaciones ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes popIn {
+  to {
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .modal-panel {
+    width: 96vw;
+    border-radius: var(--radius-md);
+  }
+}

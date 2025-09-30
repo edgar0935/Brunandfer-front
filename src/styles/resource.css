@@ -1,0 +1,233 @@
+/* ---- Páginas de recursos (Inventario / Vehículos) ---- */
+
+.resource-page {
+  display: grid;
+  gap: 1rem; /* separación uniforme entre bloques */
+  /* opcional, si necesitas que el contenido crezca a pantalla:
+  min-height: calc(100vh - 64px);
+  */
+}
+
+/* Header con icono, título y metadatos */
+.resource-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+
+.resource-title {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  font-size: 26px;
+  font-weight: var(--title-w);
+  color: var(--ink);
+  margin: 0;
+}
+
+.resource-title .icon {
+  font-size: 22px;
+  color: var(--brand);
+}
+
+.resource-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-weight: var(--ui-w);
+  color: var(--ink-2);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: .4rem .7rem;
+}
+
+/* Barra de acciones (export / imprimir) */
+.resource-actions {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+.resource-actions .btn {
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+.resource-actions .btn:hover {
+  box-shadow: var(--shadow-1);
+  transform: translateY(-1px);
+}
+
+/* Búsqueda */
+.resource-search {
+  position: relative;
+  max-width: 760px;
+}
+.resource-search input {
+  width: 100%;
+  padding: 10px 12px 10px 34px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--brand);
+  background: #fff;
+  color: var(--ink);
+}
+.resource-search input:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+.resource-search .search-icon {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  opacity: .6;
+}
+
+/* ========== CONTENEDOR DE TABLA (FIX SCROLL) ========== */
+.resource-table {
+  background: var(--paper);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  border: 1px solid var(--line);
+
+  /* CLAVES para permitir scroll interno */
+  min-height: 0;          /* evita que el grid/flex padre “estrangule” el hijo */
+  overflow: auto;         /* antes estaba hidden; ahora permite scroll */
+}
+
+/* En tu JSX usas también la clase table-wrapper: la afinamos */
+.table-wrapper {
+  /* si le das altura desde JSX (60vh), aquí reforzamos el comportamiento */
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Tabla interna */
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.inv-table th,
+.inv-table td {
+  padding: .55rem .75rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+/* Encabezado sticky para que se quede visible al hacer scroll */
+.inv-table thead {
+  position: sticky;
+  top: 0;
+  background: #a61e1eff;
+  z-index: 1; /* sobre el body de la tabla */
+  box-shadow: 0 1px 0 rgba(0,0,0,.06);
+}
+
+/* Mensaje vacío */
+.resource-empty {
+  color: var(--ink-3);
+  padding: .8rem;
+}
+
+/* Scrollbar visible, sutil (opcional) */
+.table-wrapper::-webkit-scrollbar { width: 10px; }
+.table-wrapper::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 9999px; }
+.table-wrapper { scrollbar-width: thin; scrollbar-color: #e5e7eb transparent; }
+
+/* ================================
+   BUSCADOR + FILTRO DE UBICACIÓN
+================================ */
+.search-with-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  max-width: 100%;
+}
+.search-with-filters input {
+  flex: 1;
+  min-width: 220px;
+}
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .25rem .6rem;
+  background: var(--paper);
+  border: 2px solid var(--brand);
+  border-radius: 999px;
+  box-shadow: var(--shadow-1);
+  transition: border-color var(--t-base), box-shadow var(--t-base);
+}
+.filter-group:hover {
+  border-color: var(--brand-600);
+  box-shadow: var(--shadow-2);
+}
+.filter-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-600);
+}
+.filter-select { position: relative; }
+.filter-select select {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  padding: .3rem 1.6rem .3rem .3rem;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+.filter-select::after {
+  content: "▼";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: .7rem;
+  color: var(--brand-600);
+  pointer-events: none;
+}
+
+/* ================================
+   BADGES DE UBICACIÓN EN TABLA
+================================ */
+.badge-ubicacion {
+  display: inline-flex;
+  align-items: center;
+  padding: .2rem .55rem;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  text-transform: capitalize;
+  white-space: nowrap;
+  transition: background var(--t-base);
+}
+.badge-ubicacion:hover { background: #f9f9f9; }
+.badge-ubicacion.taller {
+  background: #fff4ef; border-color: #ffd6c5; color: #b54700;
+}
+.badge-ubicacion.obra-a,
+.badge-ubicacion.obra-b {
+  background: #f5f9ff; border-color: #d4e4ff; color: #003f99;
+}
+.badge-ubicacion.bodega {
+  background: #f3fff7; border-color: #bdf0cf; color: #037133;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .resource-title { font-size: 22px; }
+  .resource-meta { font-size: 13px; }
+}
+@media (max-width: 500px) {
+  .search-with-filters { flex-direction: column; align-items: stretch; }
+  .filter-group { width: 100%; justify-content: space-between; }
+}

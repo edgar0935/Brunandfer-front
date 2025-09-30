@@ -1,0 +1,162 @@
+/* ===== Dashboard layout ===== */
+.dashboard .dash-hero{
+  display: grid;
+  grid-template-columns: 1fr 220px 220px; /* saludo + 2 KPIs */
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 16px;
+}
+
+.dashboard .hero-card{
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.dashboard .hero-title{
+  margin: 0 0 6px 0;
+  font-size: 22px;
+  font-weight: var(--title-w);
+  color: var(--ink);
+}
+.dashboard .hero-sub{
+  margin: 0;
+  color: var(--ink-3);
+}
+
+/* KPI card refinement */
+.kpi{
+  position: relative;
+  padding: 16px 14px 14px 14px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-items: start;
+  text-align: left;
+}
+.kpi__icon{
+  font-size: 20px;
+  opacity: .7;
+  margin-bottom: 6px;
+}
+.kpi__num{
+  font-size: 30px;
+  font-weight: var(--title-w);
+  line-height: 1.1;
+  color: var(--ink);
+}
+.kpi__label{
+  color: var(--ink-3);
+  font-weight: var(--ui-w);
+}
+
+/* Últimos movimientos block */
+.card__header{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom: .5rem;
+}
+.card__title{ margin:0; display:flex; align-items:center; font-weight: var(--title-w); }
+.card__link{ color: var(--brand-600); font-weight: var(--ui-w); text-decoration: none; }
+.card__link:hover{ text-decoration: underline; }
+
+.activity-list{ list-style:none; margin:0; padding:0; }
+.activity-item{
+  display:flex; gap:12px; align-items:flex-start;
+  padding:10px 6px; border-top:1px solid #f0f0f0;
+}
+.activity-item:first-child{ border-top: 0; }
+.activity-main{ display:flex; flex-direction:column; gap:4px; }
+.activity-title{ font-weight: var(--ui-w); color: var(--ink); }
+.activity-meta{ color: var(--ink-3); font-size: 0.9rem; }
+.activity-empty{ padding:.8rem; color:#666; }
+
+/* Responsive */
+@media (max-width: 900px){
+  .dashboard .dash-hero{
+    grid-template-columns: 1fr; /* pila en móvil */
+  }
+}
+/* ===== Dashboard layout ===== */
+.dashboard .dash-hero{
+  display: grid;
+  grid-template-columns: 1fr 220px 220px; /* saludo + 2 KPIs */
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 16px;
+}
+
+.dashboard .hero-card{
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.dashboard .hero-title{
+  margin: 0 0 6px 0;
+  font-size: 22px;
+  font-weight: var(--title-w);
+  color: var(--ink);
+}
+.dashboard .hero-sub{
+  margin: 0;
+  color: var(--ink-3);
+}
+
+/* KPI card refinement */
+.kpi{
+  position: relative;
+  padding: 16px 14px 14px 14px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-items: start;
+  text-align: left;
+}
+.kpi__icon{
+  font-size: 20px;
+  opacity: .7;
+  margin-bottom: 6px;
+}
+.kpi__num{
+  font-size: 30px;
+  font-weight: var(--title-w);
+  line-height: 1.1;
+  color: var(--ink);
+}
+.kpi__label{
+  color: var(--ink-3);
+  font-weight: var(--ui-w);
+}
+
+/* Últimos movimientos block */
+.card__header{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom: .5rem;
+}
+.card__title{ margin:0; display:flex; align-items:center; font-weight: var(--title-w); }
+.card__link{ color: var(--brand-600); font-weight: var(--ui-w); text-decoration: none; }
+.card__link:hover{ text-decoration: underline; }
+
+.activity-list{ list-style:none; margin:0; padding:0; }
+.activity-item{
+  display:flex; gap:12px; align-items:flex-start;
+  padding:10px 6px; border-top:1px solid #f0f0f0;
+}
+.activity-item:first-child{ border-top: 0; }
+.activity-main{ display:flex; flex-direction:column; gap:4px; }
+.activity-title{ font-weight: var(--ui-w); color: var(--ink); }
+.activity-meta{ color: var(--ink-3); font-size: 0.9rem; }
+.activity-empty{ padding:.8rem; color:#666; }
+
+/* Responsive */
+@media (max-width: 900px){
+  .dashboard .dash-hero{
+    grid-template-columns: 1fr; /* pila en móvil */
+  }
+}

@@ -1,0 +1,226 @@
+/* ===========================
+   PÁGINA / CABECERA
+   =========================== */
+.usuarios-page {
+  padding: 24px;
+  display: grid;
+  gap: 20px;
+}
+
+.usuarios-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.usuarios-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.usuarios-meta {
+  opacity: .8;
+  font-size: .95rem;
+}
+
+/* Botón Crear usuario (usa tu .btn-primary global; acá solo pequeños ajustes) */
+.crear-btn {
+  align-self: start;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* ===========================
+   TABLA
+   =========================== */
+.usuarios-table-wrap { margin-top: 4px; }
+
+.usuarios-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.usuarios-table th,
+.usuarios-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.usuarios-table th {
+  background: #f9fafb;
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.usuarios-table td {
+  font-size: 14px;
+  color: #111827;
+}
+
+.usuarios-table tr:last-child td {
+  border-bottom: none;
+}
+
+.usuarios-table tbody tr:hover {
+  background: #fafafa;
+}
+
+/* Estado vacío */
+.usuarios-empty {
+  text-align: center;
+  padding: 16px;
+  opacity: .7;
+}
+
+/* Chip de rol */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+.chip--danger { background: #c70000; color: #fff; }
+.chip--neutral { background: rgba(0,0,0,.08); color: #111; }
+
+/* ===========================
+   BOTONES
+   =========================== */
+.btn-danger {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform .05s ease;
+}
+.btn-danger:hover { filter: brightness(0.92); }
+.btn-danger:active { transform: translateY(1px); }
+
+/* Botonera de pie en modales (separada) */
+.btn-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0,0,0,.06);
+}
+.btn-row.spaced { gap: 14px; }
+.btn-row > * { min-width: 120px; }
+
+/* ===========================
+   FORMULARIO DEL MODAL
+   =========================== */
+.usuario-form {
+  display: grid;
+  gap: 14px;
+}
+
+/* Grid responsivo para campos */
+.usuario-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 12px 16px;
+}
+@media (max-width: 720px) {
+  .usuario-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field-col { display: grid; gap: 6px; }
+
+.usuario-form label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #c70000;
+}
+
+.usuario-form input,
+.usuario-form select {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #111;
+  font-size: 0.95rem;
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+
+.usuario-form input::placeholder,
+.usuario-form select::placeholder { color: #9ca3af; }
+
+.usuario-form input:focus,
+.usuario-form select:focus {
+  outline: none;
+  border-color: #c70000;
+  box-shadow: 0 0 0 3px rgba(199, 0, 0, 0.10);
+}
+
+/* Hint bajo el formulario */
+.usuario-hint {
+  margin-top: 2px;
+  font-size: .9rem;
+  color: #6b7280;
+}
+
+/* ===========================
+   PICKER DE ROL (Permisos)
+   =========================== */
+.role-col { grid-column: 1 / -1; }
+
+.role-picker {
+  display: inline-flex;
+  gap: 10px;
+  padding: 6px;
+  background: rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 12px;
+}
+
+.role-option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid transparent;
+  font-weight: 600;
+  color: #111827;
+  transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+.role-option input { accent-color: #c70000; }
+
+.role-option.is-active {
+  background: #fff;
+  border-color: #c70000;
+  box-shadow: 0 0 0 2px rgba(199,0,0,.08);
+}
+
+/* ===========================
+   UTILIDADES PEQUEÑAS
+   =========================== */
+.text-right { text-align: right; }
+.nowrap { white-space: nowrap; }

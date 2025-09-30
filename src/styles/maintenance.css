@@ -1,0 +1,158 @@
+/* === Modal de Bitácora (ANCHO Y CÓMODO) === */
+.modal .modal-content,
+.modal .modal-card,
+.modal-content {
+  width: min(1280px, 96vw);
+  max-width: none;
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  background: #fff; /* Fondo blanco limpio */
+}
+
+.modal .modal-body,
+.modal-body,
+.modal .modal-card-body {
+  max-height: 80vh;
+  overflow: auto;
+  padding: 1.5rem;
+}
+
+/* Cabecera de datos del vehículo */
+.bitacora-header {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px 32px;
+  margin-bottom: 18px;
+  font-size: 0.95rem;
+}
+.bitacora-header .label {
+  font-weight: 700;
+  color: #c70000;
+}
+
+/* Tabla de bitácora */
+.bitacora-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.bitacora-table th,
+.bitacora-table td {
+  border: 1px solid #ddd;
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+}
+.bitacora-table th {
+  background-color: #c70000;
+  color: #fff;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.bitacora-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+.bitacora-empty {
+  text-align: center;
+  color: #666;
+  padding: 1rem;
+}
+
+/* Contenedor con scroll */
+.table-wrapper {
+  max-height: 55vh;
+  overflow-y: auto;
+  border-radius: 8px;
+}
+
+/* =========================
+   Botones y Acciones
+   ========================= */
+.modal-actions,
+.form-mantenimiento .btn-row,
+.btn-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px; /* separación visible */
+  margin-top: 12px;
+  padding-top: 8px;
+}
+
+.modal-actions > * + *,
+.form-mantenimiento .btn-row > * + *,
+.btn-row > * + * {
+  margin-left: 0; /* Eliminamos duplicación de gap */
+}
+
+/* Botones: estilos consistentes */
+button,
+.btn,
+.btn-primary,
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.btn-primary {
+  background: #c70000;
+  color: #fff;
+  border: none;
+}
+.btn-primary:hover {
+  background: #a50000;
+  transform: translateY(-1px);
+}
+.btn-ghost {
+  background: #f4f4f4;
+  border: 1px solid #ddd;
+  color: #222;
+}
+.btn-ghost:hover {
+  background: #eaeaea;
+}
+
+/* Formulario de nuevo mantenimiento */
+.form-mantenimiento {
+  margin-top: 1rem;
+  display: grid;
+  gap: 12px;
+}
+.form-mantenimiento input {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  color: #000;
+  font-size: 0.95rem;
+}
+.form-mantenimiento input:focus {
+  outline: none;
+  border-color: #c70000;
+  box-shadow: 0 0 0 2px rgba(199, 0, 0, 0.1);
+}
+
+/* Título del modal */
+.modal .modal-title {
+  text-align: center;
+  color: #c70000;
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+/* Botonera de acciones rápidas */
+.bitacora-toolbar {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin: 10px 0 14px;
+}

@@ -1,0 +1,110 @@
+/* Pantalla de carga */
+.splash {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 9999;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* Fondo rojo/blanco con textura y gradiente elegante */
+.splash-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    /* Luz blanca central */
+    radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.85) 0%,
+      rgba(255, 255, 255, 0.45) 40%,
+      transparent 70%
+    ),
+
+    /* Textura diagonal sutil */
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.04) 0px,
+      rgba(255, 255, 255, 0.04) 2px,
+      transparent 3px,
+      transparent 6px
+    ),
+
+    /* Gradiente de blanco a rojo vino */
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #fdf4f4 15%,
+      #b11b1f 100%
+    );
+
+  background-blend-mode: overlay, normal;
+  z-index: -1;
+}
+
+/* Logo animado */
+.logo-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: fadeSlideIn 1.2s ease forwards;
+  opacity: 0;
+  transform: translateY(40px);
+}
+@keyframes fadeSlideIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.logo-box {
+  width: 160px;
+  height: 160px;
+  background-color: #b11b1f;
+  border-radius: 16px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25),
+              inset 0 -6px 12px rgba(0, 0, 0, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  position: relative;
+}
+.letters {
+  font-size: 44px;
+  font-weight: 800;
+  color: white;
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  opacity: 0;
+  animation: fadeInScale 0.9s ease forwards;
+  animation-delay: 0.35s;
+  transform: scale(0.9);
+  transform-origin: top left;
+}
+@keyframes fadeInScale {
+  to { opacity: 1; transform: scale(1); }
+}
+
+.subtext {
+  font-size: 18px;
+  font-weight: 700;
+  color: #756767;
+  margin-top: 12px;
+  opacity: 0;
+  animation: fadeIn 0.9s ease forwards;
+  animation-delay: 0.9s;
+  letter-spacing: 0.12em;
+}
+@keyframes fadeIn { to { opacity: 1; } }
+
+/* Fade-out suave */
+.fade-out {
+  animation: fadeOutSplash 0.4s ease forwards;
+}
+@keyframes fadeOutSplash {
+  to { opacity: 0; transform: scale(1.02); pointer-events: none; }
+}
+
+@media (max-width: 420px) {
+  .logo-box { width: 136px; height: 136px; }
+  .letters { font-size: 38px; }
+  .subtext { font-size: 16px; }
+}

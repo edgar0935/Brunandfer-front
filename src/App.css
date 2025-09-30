@@ -1,0 +1,149 @@
+/* ===========================
+   BASE
+=========================== */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #111;
+  color: #111;
+
+  /* solo evita scroll horizontal global */
+  overflow-x: hidden;
+}
+
+body.menu-open { overflow: hidden; } /* cuando el drawer está abierto */
+
+/* usar mismo ancho que el sidebar real */
+:root {
+  --sidebar-w: 300px;  /* = --sidebar-width del sidebar */
+  --sidebar-b: 3px;
+  --rail-max: 1120px;
+  --rail-pad: 16px;
+
+  --primary-red: #e4002b;
+  --black: #111;
+  --white: #fff;
+}
+
+/* ===========================
+   LAYOUT
+=========================== */
+.dashboard-container {
+  display: flex;
+  min-height: 100dvh;
+  width: 100%;
+  overflow-x: hidden;    /* 👈 evita barra horizontal del layout */
+  overflow-y: visible;
+}
+
+/* el sidebar se gestiona en su propio CSS */
+.sidebar{
+  width: var(--sidebar-w);
+  box-sizing: border-box;
+}
+
+/* contenido principal */
+.main-content{
+  margin-left: calc(var(--sidebar-w) + var(--sidebar-b));
+  width: calc(100% - (var(--sidebar-w) + var(--sidebar-b)));
+  min-width: 0;
+  min-height: 100dvh;
+  padding: 2.2rem 3rem;
+  box-sizing: border-box;
+
+  /* permitir scroll vertical del contenido */
+  overflow-y: auto;
+  overflow-x: hidden;    /* 👈 clave: sin scroll horizontal del contenido */
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #f4f4f4 10%,
+      #bfbfbf 22%,
+      #5a5a5a 36%,
+      #161616 52%,
+      #210001 64%,
+      #4b0000 78%,
+      #8b0000 90%,
+      #b10000 100%
+    );
+}
+
+.page{
+  width: 100%;
+  max-width: var(--rail-max);
+  margin-inline: auto;
+  padding-inline: var(--rail-pad);
+}
+
+/* ===========================
+   TARJETAS/KPIs/ETC
+=========================== */
+.card{
+  background: var(--white);
+  border: 1px solid #ececec;
+  border-radius: 16px;
+  box-shadow: 0 6px 14px rgba(0,0,0,.12);
+  padding: 1.2rem;
+  margin-bottom: 14px;
+  color: var(--black);
+}
+
+.welcome { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 20px; }
+.welcome__title { margin: 0; font-size: 24px; font-weight: 900; color: var(--black); }
+.welcome__subtitle { margin: .25rem 0 0; color: #444; }
+.welcome__cta { background: var(--primary-red); color: var(--white); border: 0; border-radius: 12px; padding: .65rem 1rem; font-weight: 800; display: inline-flex; gap: 8px; align-items: center; box-shadow: 0 12px 24px rgba(228,0,43,.28); cursor: pointer; text-decoration: none; transition: all .2s ease; }
+.welcome__cta:hover { filter: brightness(1.06); }
+
+.kpis{ display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:14px; margin-bottom: 18px; }
+.kpi{ background: var(--white); border: 1px solid #f0f0f0; border-radius: 12px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 10px 22px rgba(0,0,0,.12); }
+.kpi__icon{ width: 52px; height: 52px; display: grid; place-items: center; border-radius: 12px; font-size: 22px; border: 2px solid; }
+.kpi__icon--items{ color: var(--primary-red); border-color: var(--primary-red); }
+.kpi__icon--activas{ color: var(--black); border-color: var(--black); }
+.kpi__icon--terminadas{ color: #666; border-color: #ccc; }
+.kpi__value{ font-size: 28px; font-weight: 900; color: var(--black); line-height: 1; }
+.kpi__label{ font-size: 13px; color: #444; }
+
+.activity { padding: 18px 20px; }
+.activity__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
+.card-title { margin: 0; font-weight: 900; color: var(--black); }
+.link-ghost{ background: transparent; border: 0; color: var(--primary-red); font-weight: 800; display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.activity__list { list-style: none; margin: 0; padding: 0; }
+.activity__row{ display: flex; gap: 12px; align-items: flex-start; padding: 12px 4px; border-top: 1px solid #f2f2f2; }
+.activity__row:first-child{ border-top: 0; }
+.activity__desc{ font-weight: 800; color: var(--black) }
+.activity__meta{ color: #555; font-size: 12.5px }
+.activity__empty{ color: #666; padding: .8rem .2rem }
+.badge{ width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; border: 2px solid var(--black); background: var(--white); color: var(--black); }
+.badge--ok{ border-color: var(--black); color: var(--black); }
+.badge--info{ border-color: var(--primary-red); color: var(--primary-red); }
+.badge--danger{ border-color: var(--primary-red); background: var(--primary-red); color: var(--white); }
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media (max-width: 1024px){
+  /* Asegura que no haya desbordes en horizontal en móvil */
+  html, body, #root,
+  .dashboard-container,
+  .main-content {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;  /* 👈 blindaje extra */
+  }
+
+  .main-content{
+    margin-left: 0;
+    width: 100%;
+    min-width: 0;
+    min-height: 100dvh;
+    padding: 72px 1rem 1.4rem; /* espacio para la hamburguesa */
+    overflow-y: auto;
+    overflow-x: hidden;         /* 👈 clave en móvil */
+  }
+
+  .kpis{ grid-template-columns: 1fr; }
+}

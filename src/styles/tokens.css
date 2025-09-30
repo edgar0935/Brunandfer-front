@@ -1,0 +1,71 @@
+:root {
+  /* === Brand === */
+  --brand: #e63946;        /* Rojo principal */
+  --brand-600: #c70000;    /* Rojo oscuro para CTAs */
+
+  /* === Greys / text === */
+  --ink: #111;
+  --ink-2: #333;
+  --ink-3: #555;
+
+  /* === Surfaces === */
+  --paper: #fff;
+  --paper-2: #f7f7fb;
+  --line: #ececec;
+
+  /* === Feedback === */
+  --success: #0a8b3e;
+  --success-bg: #f3fff7;
+  --success-bd: #bdf0cf;
+
+  --info: #1746d1;
+  --info-bg: #f6fbff;
+  --info-bd: #cfe0ff;
+
+  --danger: #e63946;
+  --danger-600: #c70000;
+  --danger-bg: #fff4f4;
+  --danger-bd: #ffc8d0;
+
+  /* === Radius & Shadows === */
+  --radius-xs: 8px;
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --shadow-1: 0 6px 14px rgba(0,0,0,.12);
+  --shadow-2: 0 12px 24px rgba(0,0,0,.14);
+  --shadow-3: 0 22px 48px rgba(0,0,0,.18), 0 2px 0 rgba(255,255,255,.35) inset;
+
+  /* === Spacing === */
+  --space-1: .4rem;
+  --space-2: .6rem;
+  --space-3: .8rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 1.8rem;
+
+  /* === Typography === */
+  --title-w: 900;
+  --ui-w: 700;
+
+  /* === Transitions & Focus === */
+  --t-base: 180ms cubic-bezier(.2,.8,.2,1);
+  --focus-ring: 0 0 0 3px rgba(230,57,70,.18);
+
+  /* === Z-index === */
+  --z-header: 100;
+  --z-modal: 1000;
+  --z-fab: 1100;
+
+  /* === Breakpoints === */
+  --bp-sm: 480px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  :root { --t-base: 0ms linear; }
+}
