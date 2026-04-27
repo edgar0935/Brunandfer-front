@@ -4,7 +4,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { Home, Package, Truck, History, LogOut, User as UserIcon, Users } from "lucide-react";
 import { useAuth } from "@/auth/AuthProvider";
 import Protected from "@/auth/Protected";
-import "./sidebar.css";
+import "./Sidebar.css";
 
 const Sidebar: React.FC = () => {
   const [open, setOpen] = useState(false);
