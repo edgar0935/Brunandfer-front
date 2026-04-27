@@ -1,8 +1,9 @@
+// src/components/Sidebar.tsx
 import React, { useEffect, useState, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Home, Package, Truck, History, LogOut, User as UserIcon, Users } from "lucide-react";
 import { useAuth } from "@/auth/AuthProvider";
-import { Protected } from "@/auth/Protected";
+import Protected from "@/auth/Protected";
 import "./sidebar.css";
 
 const Sidebar: React.FC = () => {
@@ -11,16 +12,25 @@ const Sidebar: React.FC = () => {
   const toggleBtnRef = useRef<HTMLButtonElement | null>(null);
   const { user, logout } = useAuth();
 
-  // Cerrar al navegar
+  /** ---------------------------
+   *  HOOKS — SIEMPRE VAN ARRIBA
+   * --------------------------- */
+
+  // Cerrar menú al navegar
   useEffect(() => {
     setOpen(false);
   }, [location.pathname]);
 
-  // Bloquear scroll del body cuando el drawer está abierto (móvil)
+  // Control de clase en <body>
   useEffect(() => {
+    if (!user) {
+      document.body.classList.remove("menu-open");
+      return;
+    }
+
     document.body.classList.toggle("menu-open", open);
     return () => document.body.classList.remove("menu-open");
-  }, [open]);
+  }, [open, user]);
 
   // Cerrar con ESC
   useEffect(() => {
@@ -39,9 +49,18 @@ const Sidebar: React.FC = () => {
     toggleBtnRef.current?.blur();
   };
 
+  /** ---------------------------
+   *  RETURN CONDICIONAL — AHORA SÍ
+   * --------------------------- */
+
+  if (!user) return null;
+
+  /** ---------------------------
+   *  RENDER
+   * --------------------------- */
+
   return (
     <>
-      {/* Botón hamburguesa (visible en móvil por CSS) */}
       <button
         ref={toggleBtnRef}
         type="button"
@@ -58,11 +77,9 @@ const Sidebar: React.FC = () => {
         <span className="burger-line" />
       </button>
 
-      {/* Overlay para cerrar con click fuera */}
       {open && <div className="sidebar-overlay" onClick={() => setOpen(false)} />}
 
-      <aside id="app-sidebar" className={`sidebar ${open ? "open" : ""}`} aria-hidden={!open}>
-        {/* Header con logo B&F */}
+      <aside id="app-sidebar" className={`sidebar ${open ? "open" : ""}`}>
         <div className="sidebar-header">
           <div className="brand">
             <div className="brand-badge" aria-label="B&F">
@@ -70,31 +87,24 @@ const Sidebar: React.FC = () => {
             </div>
             <div className="brand-caption">BRUN & FER</div>
           </div>
-
           <h2 className="sidebar-title">MENÚ</h2>
         </div>
 
-        {/* Usuario + Logout */}
         <div className="sidebar-user">
           <div className="sidebar-user-left">
             <UserIcon className="icon" />
             <div className="sidebar-user-meta">
-              <div className="sidebar-user-name">{user?.name ?? "Invitado"}</div>
-              <div className="sidebar-user-role">{user?.role ?? "sin sesión"}</div>
+              <div className="sidebar-user-name">{user?.name ?? user?.email}</div>
+              <div className="sidebar-user-role">{user?.role}</div>
             </div>
           </div>
-          <button
-            type="button"
-            className="sidebar-logout"
-            onClick={logout}
-            title="Cerrar sesión"
-          >
+
+          <button type="button" className="sidebar-logout" onClick={logout} title="Cerrar sesión">
             <LogOut className="icon" />
             <span>Salir</span>
           </button>
         </div>
 
-        {/* Navegación */}
         <ul role="navigation" aria-label="Secciones">
           <li>
             <NavLink to="/dashboard" end className={linkClass}>
@@ -102,18 +112,21 @@ const Sidebar: React.FC = () => {
               Inicio
             </NavLink>
           </li>
+
           <li>
             <NavLink to="/inventario" className={linkClass}>
               <Package className="icon" />
               Inventario General
             </NavLink>
           </li>
+
           <li>
             <NavLink to="/vehiculos" className={linkClass}>
               <Truck className="icon" />
               Vehículos
             </NavLink>
           </li>
+
           <li>
             <NavLink to="/historial" className={linkClass}>
               <History className="icon" />
@@ -121,10 +134,9 @@ const Sidebar: React.FC = () => {
             </NavLink>
           </li>
 
-          {/* 👇 NUEVO: Solo visible para admin */}
           <Protected action="read" resource="usuarios">
             <li>
-              <NavLink to="/Usuarios" className={linkClass}>
+              <NavLink to="/usuarios" className={linkClass}>
                 <Users className="icon" />
                 Gestión de Usuarios
               </NavLink>

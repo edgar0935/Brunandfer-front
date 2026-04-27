@@ -4,7 +4,6 @@ import {
   getRecentMovements,
   movementLabel,
   type Movement,
-  onActivityChange,
 } from '@/services/activity'
 import {
   FaPlus, FaEdit, FaTrash, FaFilePdf, FaFileExcel, FaHistory, FaUser,
@@ -16,7 +15,6 @@ import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
 import { useAuth } from '@/auth/AuthProvider'
 import './History.css'
-
 type TypeFilter = 'all' | 'create' | 'update' | 'delete'
 
 function displayName(m: Movement): string {
@@ -49,10 +47,11 @@ export default function History() {
   const [page, setPage] = useState(1)
   const pageSize = 25
 
+  // Carga inicial (sin suscripción onActivityChange)
   useEffect(() => {
-    getRecentMovements(500).then(setRows)
-    const off = onActivityChange(() => getRecentMovements(500).then(setRows))
-    return off
+    getRecentMovements(500).then(data => {
+      setRows(Array.isArray(data) ? data : [])
+    }).catch(() => setRows([]))
   }, [])
 
   const entities = useMemo(() => Array.from(new Set(rows.map(r => r.entity))).sort(), [rows])
@@ -128,7 +127,7 @@ export default function History() {
   }
 
   return (
-    <div className="page resource-page">
+    <div className="page resource-page history-page">
       <div className="resource-header">
         <h1 className="resource-title"><FaHistory className="icon" /> Historial de Movimientos</h1>
         <span className="resource-meta">{filtered.length} registros</span>
@@ -173,7 +172,7 @@ export default function History() {
       </div>
 
       {/* Tabla */}
-      <div className="resource-table table-wrapper" style={{ height: '62vh' }}>
+      <div className="resource-table table-wrapper">
         <table className="inv-table history-table">
           <thead>
             <tr>

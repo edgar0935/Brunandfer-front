@@ -1,3 +1,4 @@
+// src/pages/Login.tsx
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/auth/AuthProvider";
@@ -29,12 +30,14 @@ export default function Login() {
       setErr("Ingresa tu usuario y contraseña.");
       return;
     }
+
     setLoading(true);
     try {
       await login(email, password, { remember });
       nav(from, { replace: true });
     } catch (e: any) {
-      setErr(e?.message ?? "Error de autenticación");
+      // Muestra mensaje claro sin HTML ni respuesta cruda del backend
+      setErr(e?.message || "Usuario o contraseña incorrectos.");
     } finally {
       setLoading(false);
     }
@@ -45,7 +48,9 @@ export default function Login() {
       <div className="login-backdrop" />
       <div className="login-card">
         <div className="login-brand">
-          <div className="brand-badge"><span className="brand-initials">B&F</span></div>
+          <div className="brand-badge">
+            <span className="brand-initials">B&amp;F</span>
+          </div>
           <div className="brand-caption">BRUN &amp; FER</div>
         </div>
 
@@ -62,6 +67,7 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="username"
                 autoFocus
+                disabled={loading}
               />
             </label>
 
@@ -75,6 +81,7 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
                   className="has-toggle"
+                  disabled={loading}
                 />
                 <button
                   type="button"
@@ -94,20 +101,26 @@ export default function Login() {
               type="checkbox"
               checked={remember}
               onChange={(e) => setRemember(e.target.checked)}
+              disabled={loading}
             />
             <span>Recordarme en este dispositivo</span>
           </label>
 
-          {err && <div className="login-error">{err}</div>}
+          {err && (
+            <div className="login-error" role="alert" aria-live="assertive">
+              {err}
+            </div>
+          )}
 
-          <button className="btn-primary login-submit" disabled={loading}>
+          <button
+            className="btn-primary login-submit"
+            disabled={loading || !email.trim() || !password.trim()}
+          >
             {loading ? "Ingresando…" : "Entrar"}
           </button>
         </form>
 
-        <div className="login-hint">
-          Demo rápida: <b>admin@local / 1234</b> (admin) · <b>operador@local / 1234</b> (user)
-        </div>
+
       </div>
     </div>
   );

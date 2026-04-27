@@ -1,51 +1,29 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  FaFilePdf,
-  FaFileExcel,
-  FaPrint,
-  FaEdit,
-  FaTrash,
-  FaPlus,
-  FaSearch,
-  FaBoxes,
+  FaFilePdf, FaFileExcel, FaPrint, FaEdit, FaTrash, FaPlus, FaSearch, FaBoxes,
 } from "react-icons/fa";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import Modal from "@/components/Modal";
-import DeleteOnly from "@/auth/DeleteOnly"; // 👈 componente para ocultar si no es admin
-import { useAuth } from "@/auth/AuthProvider"; // 👈 NUEVO
+import DeleteOnly from "@/auth/DeleteOnly";
+import { useAuth } from "@/auth/AuthProvider";
 
 import { exportInventarioPDF, exportInventarioExcel } from "@/utils/export";
 import type { Row } from "@/utils/export";
 
+import { addLocationName, removeLocationByName } from "@/services/locations";
 import { logMovement } from "@/services/activity";
 import {
-  listInventory,
-  upsertArticulo,
-  deleteArticulo,
-  nextArticuloId,
-  type Articulo,
+  listInventory, createArticulo, updateArticulo, deleteArticulo, type Articulo,
 } from "@/services/inventory";
 
-const MySwal = withReactContent(
-  Swal.mixin({
-    zIndex: 4000,
-    heightAuto: false,
-    backdrop: true,
-  })
-);
 
-const UBICACIONES_BASE = ["Taller", "Obra A", "Obra B", "Bodega", "Oficina"];
+const MySwal = withReactContent(Swal.mixin({}));
+
 export type Ubicacion = string;
 
 type ArticuloEditable = {
-  id: number;
+  id?: number;                 // undefined => nuevo
   nombre: string;
   cantidad: string;
   ubicacion: Ubicacion | "";
@@ -56,17 +34,23 @@ const normalize = (s: string) =>
 
 const byIdAsc = (a: Articulo, b: Articulo) => a.id - b.id;
 
+// ✅ Si tu backend ya registra movimientos, pon esto en true para NO duplicar desde el front
+const BACKEND_LOGS = true;
+
 export default function Inventario() {
   const [inventario, setInventario] = useState<Articulo[]>([]);
   const [busqueda, setBusqueda] = useState("");
   const [ubicaciones, setUbicaciones] = useState<string[]>([]);
+  const [loadingUbicaciones, setLoadingUbicaciones] = useState(true);
   const [ubicacionFiltro, setUbicacionFiltro] = useState<string>("Todas");
+
   const [modalVisible, setModalVisible] = useState(false);
-  const [articuloActual, setArticuloActual] =
-    useState<ArticuloEditable | null>(null);
+  const [articuloActual, setArticuloActual] = useState<ArticuloEditable | null>(null);
+  const [saving, setSaving] = useState(false);      // ← evita dobles clics al guardar
+  const [busyLoc, setBusyLoc] = useState(false);    // ← evita dobles clics en “Nueva ubicación”
+
   const nombreRef = useRef<HTMLInputElement | null>(null);
 
-  // 👇 usuario loggeado → actor para el historial
   const { user } = useAuth();
   const actor = useMemo(
     () => ({
@@ -80,38 +64,48 @@ export default function Inventario() {
 
   const isModalAbierto = modalVisible;
 
-  /* ========================
-     CARGA INICIAL
-  ======================== */
+  // ===== CARGA INICIAL INVENTARIO
   useEffect(() => {
     let mounted = true;
     (async () => {
       const data = await listInventory();
       if (mounted) setInventario(data);
     })();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
+  // ===== CARGA UBICACIONES
   useEffect(() => {
-    const raw = localStorage.getItem("ubicaciones_inventario");
-    if (raw) {
+    let alive = true;
+    (async () => {
       try {
-        const arr = JSON.parse(raw);
-        if (Array.isArray(arr) && arr.every((x) => typeof x === "string")) {
-          setUbicaciones(arr);
-          return;
-        }
-      } catch {}
-    }
-    setUbicaciones(UBICACIONES_BASE);
+        const resp = await fetch("/api/locations", { cache: "no-store" });
+        if (!resp.ok) throw new Error("No se pudieron cargar ubicaciones");
+        const raw = (await resp.json()) as string[];
+
+        const norm = Array.from(
+          new Map(
+            raw
+              .map((s) => (s ?? "").toString().trim())
+              .filter(Boolean)
+              .map((s) => [s.toLowerCase(), s])
+          ).values()
+        ).sort((a, b) => a.localeCompare(b));
+
+        if (!alive) return;
+        setUbicaciones(norm);
+      } catch {
+        if (alive) setUbicaciones([]);
+      } finally {
+        if (alive) setLoadingUbicaciones(false);
+      }
+    })();
+    return () => { alive = false; };
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("ubicaciones_inventario", JSON.stringify(ubicaciones));
-  }, [ubicaciones]);
+  const ubicacionesUniq = useMemo(() => ubicaciones, [ubicaciones]);
 
+  // ===== FILTRO
   const inventarioFiltrado = useMemo(() => {
     const q = normalize(busqueda.trim());
     let data = [...inventario];
@@ -137,16 +131,15 @@ export default function Inventario() {
   const total = inventario.length;
   const visibles = inventarioFiltrado.length;
 
+  // ===== EXPORT / PRINT
   const exportPDF = useCallback(
     () => exportInventarioPDF(inventarioFiltrado as Row[]),
     [inventarioFiltrado]
   );
-
   const exportExcel = useCallback(
     () => exportInventarioExcel(inventarioFiltrado as Row[]),
     [inventarioFiltrado]
   );
-
   const imprimir = useCallback(() => {
     const w = window.open("", "", "width=1000,height=800");
     if (!w) return;
@@ -155,7 +148,6 @@ export default function Inventario() {
         const ub = ((a as any).ubicacion || "").toString().trim();
         const label = ub ? ub : "Sin asignar";
         return `<tr>
-          <td>${a.id}</td>
           <td>${a.nombre}</td>
           <td>${a.cantidad.toLocaleString()}</td>
           <td>${label}</td>
@@ -179,39 +171,40 @@ export default function Inventario() {
       <body>
         <h2>Inventario General</h2>
         <table>
-          <thead><tr><th>ID</th><th>Artículo</th><th>Cantidad</th><th>Ubicación</th></tr></thead>
+          <thead><tr><th>Artículo</th><th>Cantidad</th><th>Ubicación</th></tr></thead>
           <tbody>${filas}</tbody>
         </table>
       </body>
       </html>
     `);
-    w.document.close();
-    w.focus();
-    w.print();
+    w.document.close(); w.focus(); 
+    w.onafterprint = () => {
     w.close();
+  }; w.print();
   }, [inventarioFiltrado]);
 
-  const abrirModal = useCallback(
-    (a: Articulo) => {
-      if (isModalAbierto) return;
-      setArticuloActual({
-        id: a.id,
-        nombre: a.nombre,
-        cantidad: String(a.cantidad),
-        ubicacion: ((a as any).ubicacion as Ubicacion) || "",
-      });
-      setModalVisible(true);
-      setTimeout(() => nombreRef.current?.focus(), 0);
-    },
-    [isModalAbierto]
-  );
+  // ===== MODAL
+  const abrirModal = useCallback((a: Articulo) => {
+    if (isModalAbierto) return;
+    setArticuloActual({
+      id: a.id,
+      nombre: a.nombre,
+      cantidad: String(a.cantidad),
+      ubicacion: ((a as any).ubicacion as Ubicacion) || "",
+    });
+    setModalVisible(true);
+    setTimeout(() => nombreRef.current?.focus(), 0);
+  }, [isModalAbierto]);
 
   const cerrarModal = useCallback(() => {
     setModalVisible(false);
     setArticuloActual(null);
+    setSaving(false);
   }, []);
 
+  // ===== NUEVA UBICACIÓN (con guardas anti-doble click)
   const agregarNuevaUbicacion = useCallback(async () => {
+    if (busyLoc) return;
     const { value, isConfirmed } = await MySwal.fire({
       title: "Nueva ubicación",
       input: "text",
@@ -222,71 +215,110 @@ export default function Inventario() {
       cancelButtonText: "Cancelar",
     });
     if (!isConfirmed || !value) return;
+
     const nueva = value.toString().trim();
     if (!nueva) return;
 
-    setUbicaciones((prev) =>
-      Array.from(new Set([...prev, nueva])).sort((a, b) => a.localeCompare(b))
-    );
-    setArticuloActual((prev) => (prev ? { ...prev, ubicacion: nueva } : prev));
-  }, []);
+    try {
+      setBusyLoc(true);
+      const next = await addLocationName(nueva);
+      setUbicaciones(next);
+      setArticuloActual((prev) => (prev ? { ...prev, ubicacion: nueva } : prev));
 
-  const eliminarUbicacion = useCallback(
-    async (nombre: string) => {
-      const target = (nombre ?? "").toString().trim();
-      if (!target) return;
-      const { isConfirmed } = await MySwal.fire({
-        title: `¿Eliminar ubicación "${target}"?`,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Eliminar",
-        confirmButtonColor: "#c70000",
-      });
-      if (!isConfirmed) return;
-
-      setUbicaciones((prev) =>
-        prev.filter((u) => u.trim().toLowerCase() !== target.toLowerCase())
-      );
-
-      setUbicacionFiltro((prev) =>
-        prev.trim().toLowerCase() === target.toLowerCase() ? "Todas" : prev
-      );
-
-      const afectados = inventario.filter(
-        (a) =>
-          (((a as any).ubicacion || "") as string).trim().toLowerCase() ===
-          target.toLowerCase()
-      );
-
-      if (afectados.length > 0) {
-        await Promise.all(
-          afectados.map(async (a) => {
-            const payload = { ...(a as any), ubicacion: "" } as Articulo;
-            await upsertArticulo(payload);
-          })
-        );
-        setInventario(await listInventory());
-
-        // 📝 log opcional de limpieza de ubicación
+      if (!BACKEND_LOGS) {
         await logMovement({
-          type: "update",
+          type: "create",
           entity: "ubicacion",
-          entityId: target,
-          entityName: target,
-          description: `Eliminó ubicación “${target}” y desasignó ${afectados.length} artículo(s)`,
+          entityId: nueva,
+          entityName: nueva,
+          description: `Creó ubicación “${nueva}”`,
           timestamp: new Date().toISOString(),
           actor,
           user: actor.name,
         });
       }
-    },
-    [inventario, actor]
-  );
 
+      MySwal.fire({
+        toast: true, position: "top-end", icon: "success",
+        title: "Ubicación creada", showConfirmButton: false, timer: 2000,
+      });
+    } finally {
+      setBusyLoc(false);
+    }
+  }, [actor, busyLoc]);
+
+  // ===== ELIMINAR UBICACIÓN
+  const eliminarUbicacion = useCallback(async (nombre: string) => {
+    const target = (nombre ?? "").toString().trim();
+    if (!target) return;
+    const { isConfirmed } = await MySwal.fire({
+      title: `¿Eliminar ubicación "${target}"?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Eliminar",
+      confirmButtonColor: "#c70000",
+    });
+    if (!isConfirmed) return;
+
+    const next = await removeLocationByName(target);
+    setUbicaciones(next);
+
+    setUbicacionFiltro((prev) =>
+      prev.trim().toLowerCase() === target.toLowerCase() ? "Todas" : prev
+    );
+
+    const afectados = inventario.filter(
+      (a) =>
+        (((a as any).ubicacion || "") as string).trim().toLowerCase() ===
+        target.toLowerCase()
+    );
+
+   if (afectados.length > 0) {
+  await Promise.all(
+    afectados.map(async (a) =>
+      updateArticulo(a.id, {
+        nombre: a.nombre,
+        cantidad: a.cantidad,
+        ubicacion: "",        // solo desasignamos la ubicación
+      })
+    )
+  );
+  setInventario(await listInventory());
+}
+
+
+    if (!BACKEND_LOGS) {
+      await logMovement({
+        type: "delete",
+        entity: "ubicacion",
+        entityId: target,
+        entityName: target,
+        description:
+          afectados.length > 0
+            ? `Eliminó ubicación “${target}” y desasignó ${afectados.length} artículo(s)`
+            : `Eliminó ubicación “${target}”`,
+        timestamp: new Date().toISOString(),
+        actor,
+        user: actor.name,
+      });
+    }
+
+    MySwal.fire({
+      toast: true, position: "top-end", icon: "success",
+      title: "Ubicación eliminada", showConfirmButton: false, timer: 2000,
+    });
+  }, [inventario, actor]);
+
+  // ===== GUARDAR ARTÍCULO (sin duplicados, sin undefined)
   const guardar = useCallback(async () => {
+    if (saving) return;                 
     if (!articuloActual) return;
-    const nombre = articuloActual.nombre.trim();
-    if (!nombre) return;
+
+    const nombre = (articuloActual.nombre || "").trim();
+    if (!nombre) {
+      MySwal.fire({ icon: "warning", title: "Escribe un nombre válido" });
+      return;
+    }
 
     const cantidadNumRaw = Number(
       (articuloActual.cantidad ?? "").toString().replace(",", ".")
@@ -294,31 +326,51 @@ export default function Inventario() {
     const cantidadNum = Number.isFinite(cantidadNumRaw) ? cantidadNumRaw : 0;
 
     const ubicacion = (articuloActual.ubicacion || "").trim();
-    const exists = inventario.some((i) => i.id === articuloActual.id);
+    const isNew = articuloActual.id == null;
 
-    await upsertArticulo({
-      id: articuloActual.id,
-      nombre,
-      cantidad: cantidadNum,
-      ubicacion,
-    } as Articulo);
+    try {
+      setSaving(true);
 
-    // 📝 LOG con actor
-    await logMovement({
-      type: exists ? "update" : "create",
-      entity: "articulo",
-      entityId: articuloActual.id,
-      entityName: nombre,
-      description: `${exists ? "Actualizó" : "Agregó"} artículo “${nombre}” (id ${articuloActual.id})`,
-      timestamp: new Date().toISOString(),
-      actor,
-      user: actor.name,
-    });
+      let saved: Articulo;
+      if (isNew) {
+        saved = await createArticulo({ nombre, cantidad: cantidadNum, ubicacion });
+      } else {
+        saved = await updateArticulo(articuloActual.id!, { nombre, cantidad: cantidadNum, ubicacion });
+      }
 
-    setInventario(await listInventory());
-    cerrarModal();
-  }, [articuloActual, inventario, cerrarModal, actor]);
+      // Solo loguea desde el front si el backend NO lo hace
+      if (!BACKEND_LOGS) {
+        await logMovement({
+          type: isNew ? "create" : "update",
+          entity: "articulo",
+          entityId: saved.id,
+          entityName: saved.nombre,
+          description: isNew
+            ? `Agregó artículo “${saved.nombre}” (id ${saved.id})`
+            : `Actualizó artículo “${saved.nombre}” (id ${saved.id})`,
+          timestamp: new Date().toISOString(),
+          actor,
+          user: actor.name,
+        });
+      }
 
+      setInventario(await listInventory());
+      cerrarModal();
+
+      MySwal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "success",
+        title: isNew ? "Artículo agregado" : "Artículo actualizado",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    } finally {
+      setSaving(false);
+    }
+  }, [articuloActual, cerrarModal, actor, saving]);
+
+  // ===== ELIMINAR ARTÍCULO
   const eliminar = useCallback(async (id: number) => {
     const { isConfirmed } = await MySwal.fire({
       title: "¿Eliminar artículo?",
@@ -328,21 +380,29 @@ export default function Inventario() {
       confirmButtonColor: "#c70000",
     });
     if (!isConfirmed) return;
+
     await deleteArticulo(id);
     setInventario(await listInventory());
 
-    // 📝 LOG con actor
-    await logMovement({
-      type: "delete",
-      entity: "articulo",
-      entityId: id,
-      description: `Eliminó artículo (id ${id})`,
-      timestamp: new Date().toISOString(),
-      actor,
-      user: actor.name,
+    if (!BACKEND_LOGS) {
+      await logMovement({
+        type: "delete",
+        entity: "articulo",
+        entityId: id,
+        description: `Eliminó artículo (id ${id})`,
+        timestamp: new Date().toISOString(),
+        actor,
+        user: actor.name,
+      });
+    }
+
+    MySwal.fire({
+      toast: true, position: "top-end", icon: "success",
+      title: "Artículo eliminado", showConfirmButton: false, timer: 2000,
     });
   }, [actor]);
 
+  // ===== RENDER (igual a tu diseño)
   return (
     <div className="page resource-page">
       <div className="resource-header">
@@ -357,22 +417,16 @@ export default function Inventario() {
       </div>
 
       <div className="resource-actions">
-        <button className="btn" onClick={exportPDF}>
-          <FaFilePdf /> Exportar PDF
-        </button>
-        <button className="btn" onClick={exportExcel}>
-          <FaFileExcel /> Exportar Excel
-        </button>
-        <button className="btn" onClick={imprimir}>
-          <FaPrint /> Imprimir
-        </button>
+        <button className="btn" onClick={exportPDF}><FaFilePdf /> Exportar PDF</button>
+        <button className="btn" onClick={exportExcel}><FaFileExcel /> Exportar Excel</button>
+        <button className="btn" onClick={imprimir}><FaPrint /> Imprimir</button>
       </div>
 
       <div className="resource-search search-with-filters">
         <FaSearch className="search-icon" />
         <input
           type="text"
-          placeholder="Buscar por nombre, ID… o ubicación"
+          placeholder="Buscar por nombre o ubicación"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
         />
@@ -382,37 +436,23 @@ export default function Inventario() {
             value={ubicacionFiltro}
             onChange={(e) => setUbicacionFiltro(e.target.value)}
           >
-            <option value="Todas">Todas</option>
-            {ubicaciones.map((u) => (
-              <option key={u} value={u}>
-                {u}
-              </option>
-            ))}
+            <option key="__todas" value="Todas">Todas</option>
+            {loadingUbicaciones ? (
+              <option key="__loading" value="" disabled>Cargando…</option>
+            ) : (
+              ubicacionesUniq.map((u) => <option key={`loc-${u}`} value={u}>{u}</option>)
+            )}
           </select>
         </div>
       </div>
 
       <div
         className="resource-table table-wrapper"
-        style={{
-          height: "60vh",
-          overflowY: "auto",
-          minHeight: 0,
-          WebkitOverflowScrolling: "touch",
-        }}
+        style={{ height: "60vh", overflowY: "auto", minHeight: 0, WebkitOverflowScrolling: "touch" }}
       >
         <table className="inv-table" role="table">
-          <thead
-            style={{
-              position: "sticky",
-              top: 0,
-              background: "var(--brand)",
-              color: "#fff",
-              zIndex: 1,
-            }}
-          >
+          <thead style={{ position: "sticky", top: 0, background: "var(--brand)", color: "#fff", zIndex: 1 }}>
             <tr>
-              <th>ID</th>
               <th>Artículo</th>
               <th>Cantidad</th>
               <th>Ubicación</th>
@@ -424,7 +464,6 @@ export default function Inventario() {
               const ub = (((a as any).ubicacion || "") as string).trim();
               return (
                 <tr key={a.id}>
-                  <td>{a.id}</td>
                   <td>{a.nombre}</td>
                   <td>{a.cantidad.toLocaleString()}</td>
                   <td>{ub || "Sin asignar"}</td>
@@ -464,8 +503,8 @@ export default function Inventario() {
       <button
         className="boton-flotante"
         onClick={() => {
-          const id = nextArticuloId();
-          setArticuloActual({ id, nombre: "", cantidad: "0", ubicacion: "" });
+          if (isModalAbierto) return;
+          setArticuloActual({ id: undefined, nombre: "", cantidad: "", ubicacion: "" });
           setModalVisible(true);
           setTimeout(() => nombreRef.current?.focus(), 0);
         }}
@@ -476,19 +515,17 @@ export default function Inventario() {
       {modalVisible && articuloActual && (
         <Modal
           isOpen={modalVisible}
-          title={
-            inventario.some((i) => i.id === articuloActual.id)
-              ? "Actualizar artículo"
-              : "Agregar artículo"
-          }
+          title={articuloActual.id != null ? "Actualizar artículo" : "Agregar artículo"}
           onClose={cerrarModal}
           initialFocusRef={nombreRef as React.RefObject<HTMLInputElement>}
+          size="xl"
+          variant="light"
           actions={
             <>
-              <button className="btn-primary" onClick={guardar}>
-                Guardar
+              <button className="btn-primary" onClick={guardar} disabled={saving}>
+                {saving ? "Guardando…" : "Guardar"}
               </button>
-              <button className="btn-ghost" onClick={cerrarModal}>
+              <button className="btn-ghost" onClick={cerrarModal} disabled={saving}>
                 Cancelar
               </button>
             </>
@@ -499,9 +536,7 @@ export default function Inventario() {
             id="nombre"
             ref={nombreRef}
             value={articuloActual.nombre}
-            onChange={(e) =>
-              setArticuloActual({ ...articuloActual, nombre: e.target.value })
-            }
+            onChange={(e) => setArticuloActual({ ...articuloActual, nombre: e.target.value })}
           />
 
           <label htmlFor="ubicacion">Ubicación:</label>
@@ -509,32 +544,26 @@ export default function Inventario() {
             <select
               id="ubicacion"
               value={articuloActual.ubicacion}
-              onChange={(e) =>
-                setArticuloActual({
-                  ...articuloActual,
-                  ubicacion: e.target.value,
-                })
-              }
+              onChange={(e) => setArticuloActual({ ...articuloActual, ubicacion: e.target.value })}
+              disabled={saving}
             >
               <option value="">Sin asignar</option>
-              {ubicaciones.map((u) => (
-                <option key={u} value={u}>
-                  {u}
-                </option>
-              ))}
+              {loadingUbicaciones ? (
+                <option value="" disabled>Cargando…</option>
+              ) : (
+                ubicacionesUniq.map((u) => (
+                  <option key={`loc-modal-${u}`} value={u}>{u}</option>
+                ))
+              )}
             </select>
 
-            <button type="button" className="btn" onClick={agregarNuevaUbicacion}>
+            <button type="button" className="btn" onClick={agregarNuevaUbicacion} disabled={busyLoc || saving}>
               <FaPlus /> Nueva
             </button>
 
             <DeleteOnly resource="inventario">
               {articuloActual.ubicacion && (
-                <button
-                  type="button"
-                  className="btn-danger"
-                  onClick={() => eliminarUbicacion(articuloActual.ubicacion)}
-                >
+                <button type="button" className="btn-danger" onClick={() => eliminarUbicacion(articuloActual.ubicacion as string)} disabled={saving}>
                   <FaTrash />
                 </button>
               )}
@@ -547,11 +576,9 @@ export default function Inventario() {
             type="number"
             value={articuloActual.cantidad}
             onChange={(e) =>
-              setArticuloActual({
-                ...articuloActual,
-                cantidad: e.target.value.replace(",", "."),
-              })
+              setArticuloActual({ ...articuloActual, cantidad: e.target.value.replace(",", ".") })
             }
+            disabled={saving}
           />
         </Modal>
       )}

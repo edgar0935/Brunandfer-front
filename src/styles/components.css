@@ -137,6 +137,7 @@ button { font-family: inherit; }
 }
 
 /* ---------- Botón flotante (FAB) ---------- */
+/* ---------- Botón flotante (FAB) ---------- */
 .boton-flotante {
   position: fixed;
   right: 24px;
@@ -145,16 +146,25 @@ button { font-family: inherit; }
   height: 56px;
   border-radius: 50%;
   border: 0;
-  background: var(--brand-600);
-  color: #fff;
+  background: #000 !important;   /* 🔥 NEGRO */
+  color: #fff !important;         /* texto blanco */
   display: grid;
   place-items: center;
   box-shadow: var(--shadow-2);
   transition: transform var(--t-base), box-shadow var(--t-base), filter var(--t-base);
   z-index: 1100;
 }
-.boton-flotante:hover { transform: translateY(-2px) scale(1.02); filter: brightness(1.06); box-shadow: var(--shadow-3); }
-.icono-plus { font-size: 18px; }
+
+.boton-flotante:hover {
+  transform: translateY(-2px) scale(1.02);
+  filter: brightness(1.15);       /* más claridad al pasar el mouse */
+  box-shadow: var(--shadow-3);
+}
+
+.icono-plus { 
+  font-size: 18px;
+}
+
 
 /* ---------- Chips/Badges ---------- */
 .chip {
@@ -523,3 +533,19 @@ button { font-family: inherit; }
 
 /* SweetAlert2 SIEMPRE por encima de cualquier modal propio */
 .swal2-container { z-index: 5000 !important; }
+
+
+.mnt-input-icon {
+  position: relative;
+}
+
+.calendar-icon {
+  position: absolute;
+  right: 40px;        /* 👈 mueve el ícono a la izquierda */
+  top: 50%;
+  transform: translateY(-50%);
+  color: #555;
+  font-size: 1.2rem;
+  pointer-events: none; /* evita que bloquee clics en el input */
+}
+

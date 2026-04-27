@@ -1,72 +1,102 @@
 // src/services/users.ts
-export type UserRole = "admin" | "user";
+import { apiFetch } from "@/utils/api";   // helper central de fetch
 
-export type User = {
-  id: string;
+export type Rol = "admin" | "user";
+
+export type UserRow = {
+  id: number;
   nombre: string;
   apellido: string;
-  username: string;
-  password: string;
-  role: UserRole;
+  email: string;
+  role: Rol;
+  isActive: 0 | 1;
+  createdAt: string;
 };
 
-// Clave en localStorage
-const STORAGE_KEY = "app_users";
+export type NewUser = {
+  nombre: string;
+  apellido: string;
+  email: string;
+  password: string;
+  role?: Rol;
+  isActive?: 0 | 1;
+};
 
-// Cargar usuarios desde localStorage o crear default si no hay
-export function getUsers(): User[] {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (raw) return JSON.parse(raw);
-  // Usuarios por defecto
-  const defaults: User[] = [
-    {
-      id: crypto.randomUUID(),
-      nombre: "Admin",
-      apellido: "General",
-      username: "admin@local",
-      password: "1234",
-      role: "admin",
-    },
-    {
-      id: crypto.randomUUID(),
-      nombre: "Operador",
-      apellido: "Demo",
-      username: "operador@local",
-      password: "1234",
-      role: "user",
-    },
-  ];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(defaults));
-  return defaults;
-}
+export type UserPatch = Partial<{
+  nombre: string;
+  apellido: string;
+  email: string;
+  role: Rol;
+  isActive: 0 | 1;
+  password: string;
+}>;
 
-// Guardar lista en localStorage
-function saveUsers(users: User[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
-}
+const BASE = "/api/users";
 
-// Crear un nuevo usuario
-export function createUser(data: Omit<User, "id">): User {
-  const users = getUsers();
-  // Evitar duplicados por username
-  if (users.some((u) => u.username === data.username)) {
-    throw new Error("El nombre de usuario ya existe.");
+/* ======================================
+   🔐 Autenticación (para AuthProvider)
+   ====================================== */
+// Usa apiFetch SIN token y SIN redirigir en 401.
+// Devuelve { ok: false } en cualquier error para evitar HTML crudo.
+export async function validateCredentials(email: string, password: string) {
+  const endpoints = ["/api/auth/login", "/api/users/login"]; // intenta ambas por compatibilidad
+
+  for (const url of endpoints) {
+    try {
+      const res = await apiFetch<{ token?: string; user?: { id: number; name?: string; email: string; role: Rol } }>(url, {
+        method: "POST",
+        json: { email, password },
+        withAuth: false,            // no adjuntar Bearer
+        suppress401Redirect: true,  // no redirigir en 401
+      });
+
+      if (res?.user) {
+        return {
+          ok: true,
+          user: res.user,
+          token: res.token,
+        };
+      }
+    } catch {
+      // intenta el siguiente endpoint
+    }
   }
-  const nuevo: User = { ...data, id: crypto.randomUUID() };
-  users.push(nuevo);
-  saveUsers(users);
-  return nuevo;
+
+  // Si llegamos aquí, credenciales inválidas o error → ok:false
+  return { ok: false } as {
+    ok: false;
+    user?: undefined;
+    token?: undefined;
+  };
 }
 
-// Eliminar usuario
-export function deleteUser(id: string) {
-  const users = getUsers().filter((u) => u.id !== id);
-  saveUsers(users);
-}
+/* ======================================
+   👥 CRUD de usuarios (requiere token)
+   ====================================== */
 
-// Verificar credenciales en login
-export function validateCredentials(username: string, password: string): User | null {
-  const users = getUsers();
-  const found = users.find((u) => u.username === username && u.password === password);
-  return found ?? null;
-}
+export const listUsers = async (): Promise<UserRow[]> =>
+  apiFetch<UserRow[]>(BASE, { cache: "no-store" });
+
+export const createUser = async (u: NewUser) =>
+  apiFetch<{ ok: true; id: number }>(BASE, {
+    method: "POST",
+    json: u,
+  });
+
+export const updateUser = async (id: number, patch: UserPatch) =>
+  apiFetch<{ ok: true }>(`${BASE}/${id}`, {
+    method: "PUT",
+    json: patch,
+  });
+
+export const deleteUser = async (id: number) =>
+  apiFetch<{ ok: true }>(`${BASE}/${id}`, { method: "DELETE" });
+
+export const resetPassword = async (id: number, newPassword: string) =>
+  apiFetch<{ ok: true }>(`${BASE}/${id}/reset`, {
+    method: "POST",
+    json: { newPassword },
+  });
+
+/** Alias para compatibilidad */
+export const getUsers = listUsers;

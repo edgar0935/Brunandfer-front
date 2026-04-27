@@ -1,89 +1,122 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { validateCredentials, getUsers, type User } from "@/services/users";
+// src/auth/AuthProvider.tsx
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { validateCredentials } from "@/services/users";
 
-type SessionUser = {
-  id: string;
-  name: string;      // nombre completo para mostrar
-  username: string;  // login
-  role: "admin" | "user";
+export type Role = "admin" | "user";
+
+export type AuthUser = {
+  id?: number;
+  name?: string;
+  email: string;
+  role: Role;
+  token?: string;
 };
 
-type LoginOptions = { remember?: boolean };
+type Action = "read" | "create" | "update" | "delete";
 
 type AuthContextShape = {
-  user: SessionUser | null;
+  user: AuthUser | null;
   loading: boolean;
-  login: (username: string, password: string, opts?: LoginOptions) => Promise<void>;
+  login: (email: string, password: string, opts?: { remember?: boolean }) => Promise<void>;
   logout: () => void;
-  // permisos simples (lo usa <Protected/>)
-  hasPermission: (action: "create" | "read" | "update" | "delete", resource?: string) => boolean;
+  can: (action: Action, resource?: string) => boolean;
+  hasPermission: (action: Action, resource?: string) => boolean;
 };
 
 const AuthContext = createContext<AuthContextShape | undefined>(undefined);
 
-const SESSION_KEY = "session_user"; // guarda la sesión
+const LS_KEY = "auth:user";
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<SessionUser | null>(null);
+/** Reglas de autorización básicas */
+function evaluatePermission(user: AuthUser | null, action: Action, resource?: string) {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+
+  // role: user
+  if (resource === "usuarios") return false; // no ve gestión de usuarios
+  if (action === "delete") return false;     // no puede eliminar en ningún recurso
+  return true;                               // resto: ok
+}
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Carga de sesión persistida
+  // Carga inicial desde localStorage
   useEffect(() => {
     try {
-      // Asegura que existan usuarios por defecto
-      getUsers();
-      const raw = localStorage.getItem(SESSION_KEY);
-      if (raw) setUser(JSON.parse(raw));
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as AuthUser;
+        setUser(parsed);
+      }
+    } catch {
+      // ignore
     } finally {
       setLoading(false);
     }
   }, []);
 
-  async function login(username: string, password: string, opts?: LoginOptions) {
-    const u: User | null = validateCredentials(username.trim(), password.trim());
-    if (!u) throw new Error("Usuario o contraseña incorrectos.");
+  const login = useCallback(
+    async (email: string, password: string, opts: { remember?: boolean } = { remember: true }) => {
+      const res = await validateCredentials(email, password);
+      if (!res?.ok || !res.user) {
+        // Mensaje EXACTO que quieres ver en el formulario
+        throw new Error("Usuario o contraseña incorrecta");
+      }
+      const u: AuthUser = {
+        id: res.user.id,
+        name: res.user.name ?? res.user.email,
+        email: res.user.email,
+        role: res.user.role,
+        token: res.token,
+      };
+      setUser(u);
+      localStorage.setItem(LS_KEY, JSON.stringify(u));
 
-    const sess: SessionUser = {
-      id: u.id,
-      name: `${u.nombre} ${u.apellido}`.trim(),
-      username: u.username,
-      role: u.role,
-    };
-    setUser(sess);
-    if (opts?.remember) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(sess));
-    } else {
-      localStorage.removeItem(SESSION_KEY);
-    }
-  }
+      // Si NO quiere recordar, limpiamos al cerrar la pestaña (comportamiento similar a sesión)
+      if (opts.remember === false) {
+        const handler = () => localStorage.removeItem(LS_KEY);
+        window.addEventListener("beforeunload", handler, { once: true });
+      }
+    },
+    []
+  );
 
-  function logout() {
+  const logout = useCallback(() => {
     setUser(null);
-    localStorage.removeItem(SESSION_KEY);
-  }
+    localStorage.removeItem(LS_KEY);
+  }, []);
 
-  // Reglas simples de permisos (ajústalas si lo necesitas)
-  const hasPermission = (action: "create" | "read" | "update" | "delete", resource?: string) => {
-    if (!user) return false;
-    if (user.role === "admin") return true;          // admin todo
-    // user (operador)
-    if (action === "delete") return false;           // operador no elimina nada
-    if (resource === "usuarios") {                   // operador no gestiona usuarios
-      return false;
-    }
-    return true;                                     // el resto sí
-  };
+  const can = useCallback(
+    (action: Action, resource?: string) => evaluatePermission(user, action, resource),
+    [user]
+  );
 
-  const value = useMemo(
-    () => ({ user, loading, login, logout, hasPermission }),
-    [user, loading]
+  const value = useMemo<AuthContextShape>(
+    () => ({
+      user,
+      loading,
+      login,
+      logout,
+      can,
+      hasPermission: can,
+    }),
+    [user, loading, login, logout, can]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+};
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
+  if (!ctx) throw new Error("useAuth debe usarse dentro de <AuthProvider>");
   return ctx;
 }

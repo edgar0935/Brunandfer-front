@@ -1,4 +1,4 @@
-/* ---- Páginas de recursos (Inventario / Vehículos) ---- */
+/* ---- Páginas de recursos (Inventario / Vehículos / Historial) ---- */
 
 .resource-page {
   display: grid;
@@ -92,39 +92,54 @@
   border: 1px solid var(--line);
 
   /* CLAVES para permitir scroll interno */
-  min-height: 0;          /* evita que el grid/flex padre “estrangule” el hijo */
-  overflow: auto;         /* antes estaba hidden; ahora permite scroll */
+  min-height: 0;
+  overflow: auto;
 }
 
-/* En tu JSX usas también la clase table-wrapper: la afinamos */
+/* En tu JSX usas también la clase table-wrapper */
 .table-wrapper {
-  /* si le das altura desde JSX (60vh), aquí reforzamos el comportamiento */
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Tabla interna */
+/* ============================
+   Tabla unificada (Inventario/Vehículos/Historial)
+   ============================ */
 .inv-table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 14.5px;
+  line-height: 1.32;
 }
 
 .inv-table th,
 .inv-table td {
-  padding: .55rem .75rem;
+  padding: .65rem .95rem;
   border-bottom: 1px solid var(--line);
   text-align: left;
+  color: var(--ink);
+  text-align: center;
+  vertical-align: middle;
+  vertical-align: middle;
 }
 
-/* Encabezado sticky para que se quede visible al hacer scroll */
-.inv-table thead {
+/* Encabezado rojo degradado (igual en todas las tablas) */
+.inv-table thead th {
   position: sticky;
   top: 0;
-  background: #a61e1eff;
-  z-index: 1; /* sobre el body de la tabla */
-  box-shadow: 0 1px 0 rgba(0,0,0,.06);
+  z-index: 2;
+  background: linear-gradient(0deg, var(--brand), #b90d0d);
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  font-weight: 800;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,.08);
 }
+
+/* Filas alternadas y hover */
+.inv-table tbody tr:nth-child(even) { background: #fafafa; }
+.inv-table tbody tr:hover { background: #f2f2f2; }
 
 /* Mensaje vacío */
 .resource-empty {
@@ -132,7 +147,7 @@
   padding: .8rem;
 }
 
-/* Scrollbar visible, sutil (opcional) */
+/* Scrollbar visible, sutil */
 .table-wrapper::-webkit-scrollbar { width: 10px; }
 .table-wrapper::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 9999px; }
 .table-wrapper { scrollbar-width: thin; scrollbar-color: #e5e7eb transparent; }

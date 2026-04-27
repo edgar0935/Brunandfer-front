@@ -1,13 +1,32 @@
 /* ===== Dashboard layout ===== */
-.dashboard .dash-hero{
-  display: grid;
-  grid-template-columns: 1fr 220px 220px; /* saludo + 2 KPIs */
-  gap: 16px;
-  align-items: stretch;
+
+/* Centrar todo el contenido del dashboard */
+.page.dashboard {
+  max-width: 960px;   /* ancho máximo */
+  margin: 0 auto;     /* centra horizontalmente */
+  padding: 0 16px;    /* espacio lateral */
+}
+
+/* Saludo arriba */
+.saludo {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  padding: 18px 20px;
   margin-bottom: 16px;
 }
 
-.dashboard .hero-card{
+/* KPIs en la misma línea y centrados */
+.dashboard .dash-hero {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr)); /* dos columnas con ancho mínimo */
+  gap: 16px;
+  justify-content: space-evenly; /* distribuye las tarjetas de forma pareja */
+  margin-bottom: 16px;
+}
+
+.dashboard .hero-card {
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -17,19 +36,25 @@
   flex-direction: column;
   justify-content: center;
 }
-.dashboard .hero-title{
+
+.dashboard .hero-title {
   margin: 0 0 6px 0;
   font-size: 22px;
   font-weight: var(--title-w);
   color: var(--ink);
 }
-.dashboard .hero-sub{
+
+.dashboard .hero-sub {
   margin: 0;
   color: var(--ink-3);
 }
 
 /* KPI card refinement */
-.kpi{
+.kpi {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
   position: relative;
   padding: 16px 14px 14px 14px;
   display: grid;
@@ -37,126 +62,92 @@
   align-items: start;
   text-align: left;
 }
-.kpi__icon{
+
+.kpi__icon {
   font-size: 20px;
   opacity: .7;
   margin-bottom: 6px;
 }
-.kpi__num{
+
+.kpi__num {
   font-size: 30px;
   font-weight: var(--title-w);
   line-height: 1.1;
   color: var(--ink);
 }
-.kpi__label{
+
+.kpi__label {
   color: var(--ink-3);
   font-weight: var(--ui-w);
 }
 
 /* Últimos movimientos block */
-.card__header{
+.card__header {
   display:flex; align-items:center; justify-content:space-between;
   margin-bottom: .5rem;
 }
-.card__title{ margin:0; display:flex; align-items:center; font-weight: var(--title-w); }
-.card__link{ color: var(--brand-600); font-weight: var(--ui-w); text-decoration: none; }
-.card__link:hover{ text-decoration: underline; }
 
-.activity-list{ list-style:none; margin:0; padding:0; }
-.activity-item{
+.card__title {
+  margin:0; display:flex; align-items:center; font-weight: var(--title-w);
+}
+
+.card__link {
+  color: var(--brand-600); font-weight: var(--ui-w); text-decoration: none;
+}
+
+.card__link:hover { text-decoration: underline; }
+
+.activity-list { list-style:none; margin:0; padding:0; }
+
+.activity-item {
   display:flex; gap:12px; align-items:flex-start;
   padding:10px 6px; border-top:1px solid #f0f0f0;
 }
-.activity-item:first-child{ border-top: 0; }
-.activity-main{ display:flex; flex-direction:column; gap:4px; }
-.activity-title{ font-weight: var(--ui-w); color: var(--ink); }
-.activity-meta{ color: var(--ink-3); font-size: 0.9rem; }
-.activity-empty{ padding:.8rem; color:#666; }
 
-/* Responsive */
-@media (max-width: 900px){
-  .dashboard .dash-hero{
+.activity-item:first-child { border-top: 0; }
+
+.activity-main { display:flex; flex-direction:column; gap:4px; }
+
+.activity-title { font-weight: var(--ui-w); color: var(--ink); }
+
+.activity-meta { color: var(--ink-3); font-size: 0.9rem; }
+
+.activity-empty { padding:.8rem; color:#666; }
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  .dashboard .dash-hero {
     grid-template-columns: 1fr; /* pila en móvil */
+    justify-content: stretch;   /* que ocupen todo el ancho en móvil */
   }
 }
-/* ===== Dashboard layout ===== */
-.dashboard .dash-hero{
-  display: grid;
-  grid-template-columns: 1fr 220px 220px; /* saludo + 2 KPIs */
-  gap: 16px;
-  align-items: stretch;
-  margin-bottom: 16px;
+
+@media (max-width: 600px) {
+  .dashboard .hero-card,
+  .saludo {
+    padding: 14px 16px;
+  }
+  .dashboard .hero-title {
+    font-size: 18px;
+  }
+  .dashboard .hero-sub {
+    font-size: 0.9rem;
+  }
+  .kpi__num {
+    font-size: 24px;
+  }
 }
 
-.dashboard .hero-card{
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-1);
-  padding: 18px 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.dashboard .hero-title{
-  margin: 0 0 6px 0;
-  font-size: 22px;
-  font-weight: var(--title-w);
-  color: var(--ink);
-}
-.dashboard .hero-sub{
-  margin: 0;
-  color: var(--ink-3);
-}
-
-/* KPI card refinement */
-.kpi{
-  position: relative;
-  padding: 16px 14px 14px 14px;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  align-items: start;
-  text-align: left;
-}
-.kpi__icon{
-  font-size: 20px;
-  opacity: .7;
-  margin-bottom: 6px;
-}
-.kpi__num{
-  font-size: 30px;
-  font-weight: var(--title-w);
-  line-height: 1.1;
-  color: var(--ink);
-}
-.kpi__label{
-  color: var(--ink-3);
-  font-weight: var(--ui-w);
-}
-
-/* Últimos movimientos block */
-.card__header{
-  display:flex; align-items:center; justify-content:space-between;
-  margin-bottom: .5rem;
-}
-.card__title{ margin:0; display:flex; align-items:center; font-weight: var(--title-w); }
-.card__link{ color: var(--brand-600); font-weight: var(--ui-w); text-decoration: none; }
-.card__link:hover{ text-decoration: underline; }
-
-.activity-list{ list-style:none; margin:0; padding:0; }
-.activity-item{
-  display:flex; gap:12px; align-items:flex-start;
-  padding:10px 6px; border-top:1px solid #f0f0f0;
-}
-.activity-item:first-child{ border-top: 0; }
-.activity-main{ display:flex; flex-direction:column; gap:4px; }
-.activity-title{ font-weight: var(--ui-w); color: var(--ink); }
-.activity-meta{ color: var(--ink-3); font-size: 0.9rem; }
-.activity-empty{ padding:.8rem; color:#666; }
-
-/* Responsive */
-@media (max-width: 900px){
-  .dashboard .dash-hero{
-    grid-template-columns: 1fr; /* pila en móvil */
+@media (max-width: 480px) {
+  .activity-item {
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 4px;
+  }
+  .activity-title {
+    font-size: 0.9rem;
+  }
+  .activity-meta {
+    font-size: 0.8rem;
   }
 }

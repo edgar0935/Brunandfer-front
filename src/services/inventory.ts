@@ -1,38 +1,41 @@
 // src/services/inventory.ts
-import { readJSON, writeJSON, ensureSeed } from './localdb';
+import { apiFetch } from "@/utils/api";
 
-ensureSeed();
+export type Articulo = {
+  id: number;
+  nombre: string;
+  cantidad: number;
+  ubicacion?: string;
+};
 
-export interface Articulo { id: number; nombre: string; cantidad: number }
-
-const KEY = 'inventory';
-
-function listAll(): Articulo[] {
-  return readJSON<Articulo[]>(KEY, []);
-}
-
-function saveAll(rows: Articulo[]) {
-  writeJSON(KEY, rows);
-}
+const API = "/api/inventory";
 
 export async function listInventory(): Promise<Articulo[]> {
-  return listAll().slice().sort((a, b) => a.id - b.id);
+  return apiFetch<Articulo[]>(API, { cache: "no-store", suppress401Redirect: true });
 }
 
-export async function upsertArticulo(a: Articulo): Promise<void> {
-  const rows = listAll();
-  const idx = rows.findIndex(r => r.id === a.id);
-  if (idx >= 0) rows[idx] = a; else rows.push(a);
-  saveAll(rows);
+/** Crear artículo (NO enviar id; el backend lo asigna) */
+export async function createArticulo(input: Omit<Articulo, "id">): Promise<Articulo> {
+  return apiFetch<Articulo>(API, {
+    method: "POST",
+    json: input,
+    suppress401Redirect: true,
+  });
 }
 
+/** Actualizar artículo existente */
+export async function updateArticulo(
+  id: number,
+  patch: Partial<Omit<Articulo, "id">>
+): Promise<Articulo> {
+  return apiFetch<Articulo>(`${API}/${id}`, {
+    method: "PUT",
+    json: patch,
+    suppress401Redirect: true,
+  });
+}
+
+/** Eliminar artículo */
 export async function deleteArticulo(id: number): Promise<void> {
-  const rows = listAll().filter(r => r.id !== id);
-  saveAll(rows);
-}
-
-export function nextArticuloId(): number {
-  const rows = listAll();
-  const max = rows.reduce((m, r) => Math.max(m, r.id), 0);
-  return max + 1;
+  await apiFetch(`${API}/${id}`, { method: "DELETE", suppress401Redirect: true });
 }

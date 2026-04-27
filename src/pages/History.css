@@ -9,7 +9,7 @@
   gap: .8rem 1rem;
   align-items: end;
   margin: .75rem 0 1rem;
-  padding: .8rem;                     /* card */
+  padding: .6rem;                     /* card */
   background: #ffffffea;              /* blanco con leve opacidad */
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -19,7 +19,7 @@
 
 .filters-row .filter {
   display: grid;
-  gap: .34rem;
+  gap: 1px;
   min-width: 180px;
 }
 
@@ -258,5 +258,122 @@
   }
   .history-pagination .btn {
     width: 100%;
+  }
+}
+/* ===============================
+   HISTORY — modo compacto (overrides)
+   =============================== */
+
+/* Filtros más compactos */
+.filters-row {
+  gap: .6rem .75rem;
+  margin: .5rem 0 .7rem;
+  padding: .45rem;                   /* antes .6rem */
+}
+.filters-row .filter {
+  gap: .25rem;                       /* antes 1px */
+  min-width: 160px;                  /* antes 180px */
+}
+.filters-row .filter label {
+  font-size: 12px;                   /* antes 12.5px */
+  letter-spacing: .005em;
+}
+.filters-row .filter select,
+.filters-row .filter input[type="date"] {
+  height: 34px;                      /* antes 38px */
+  padding: 0 .55rem;                 /* antes .65rem */
+}
+
+/* Checkbox “Solo mis acciones” más apretado */
+.filters-row .only-mine,
+.filters-row label.filter[for="only-mine"] {
+  gap: .4rem;
+  height: 34px;                      /* alinear con inputs */
+  padding: 0 .5rem;                  /* antes .6rem */
+  font-size: 13px;
+}
+.filters-row input[type="checkbox"] {
+  width: 16px; height: 16px;         /* antes 18x18 */
+}
+
+/* Tabla compacta */
+.inv-table.history-table {
+  font-size: 14px;                   /* mantenemos legible */
+  line-height: 1.28;                 /* un pelín más cerrado */
+}
+.inv-table.history-table thead th {
+  padding: .55rem .75rem;            /* antes .7rem .95rem */
+}
+.inv-table.history-table td {
+  padding: .56rem .75rem;            /* antes .72rem .95rem */
+}
+
+/* Chips más pequeñas */
+.chip {
+  gap: .35rem;                       /* antes .42rem */
+  padding: .16rem .5rem;             /* antes .22rem .6rem */
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 800;
+}
+
+/* Estado vacío con menos alto */
+.history-empty { padding: .7rem; }
+
+/* Paginación más compacta */
+.history-pagination {
+  gap: .6rem;                        /* antes .8rem/.7rem */
+  margin-top: .6rem;                 /* antes .9rem/1rem */
+  padding: .45rem .8rem;             /* antes .6rem 1rem */
+}
+.history-pagination .btn {
+  padding: .4rem .75rem;             /* antes .5/.95 o .45/.9 */
+  min-width: 80px;                   /* antes 90px */
+  font-size: 14px;
+}
+.history-pagination .page-info {
+  padding: .32rem .65rem;            /* antes .4rem .8rem */
+  min-width: 110px;
+  font-size: 13.5px;
+}
+
+/* Cols largas un poco más estrechas para ganar alto total */
+.inv-table.history-table td:nth-child(3),
+.inv-table.history-table td:nth-child(4) {
+  max-width: 520px;                  /* antes 560px */
+}
+
+/* Responsive: compactar un poco más en pantallas medianas */
+@media (max-width: 1080px) {
+  .inv-table.history-table td:nth-child(3),
+  .inv-table.history-table td:nth-child(4) { max-width: 390px; } /* antes 420px */
+}
+@media (max-width: 880px) {
+  .filters-row { grid-template-columns: 1fr 1fr auto; } /* más denso que 2 columnas puras */
+  .inv-table.history-table td { padding: .5rem .7rem; }
+  .inv-table.history-table thead th { padding: .5rem .7rem; }
+  .inv-table.history-table td:nth-child(3),
+  .inv-table.history-table td:nth-child(4) { max-width: 280px; } /* antes 300px */
+}
+@media (max-width: 640px) {
+  .inv-table.history-table td:nth-child(3),
+  .inv-table.history-table td:nth-child(4) { max-width: 200px; } /* antes 210px */
+}
+/* Mejor responsividad en móviles */
+@media (max-width: 600px) {
+  .filters-row {
+    grid-template-columns: 1fr; /* apilar filtros en una sola columna */
+  }
+
+  .table-wrapper {
+    overflow-x: auto; /* permitir scroll horizontal */
+  }
+
+  .inv-table.history-table {
+    min-width: 480px; /* asegura que la tabla no se colapse demasiado */
+  }
+
+  .history-pagination .btn {
+    width: 100%; /* botones grandes y fáciles de pulsar */
   }
 }

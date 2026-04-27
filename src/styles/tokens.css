@@ -33,14 +33,14 @@
   --radius-md: 12px;
   --radius-lg: 16px;
 
-  --shadow-1: 0 6px 14px rgba(0,0,0,.12);
-  --shadow-2: 0 12px 24px rgba(0,0,0,.14);
-  --shadow-3: 0 22px 48px rgba(0,0,0,.18), 0 2px 0 rgba(255,255,255,.35) inset;
+  --shadow-1: 0 6px 14px rgba(0, 0, 0, 0.12);
+  --shadow-2: 0 12px 24px rgba(0, 0, 0, 0.14);
+  --shadow-3: 0 22px 48px rgba(0, 0, 0, 0.18), 0 2px 0 rgba(255, 255, 255, 0.35) inset;
 
   /* === Spacing === */
-  --space-1: .4rem;
-  --space-2: .6rem;
-  --space-3: .8rem;
+  --space-1: 0.4rem;
+  --space-2: 0.6rem;
+  --space-3: 0.8rem;
   --space-4: 1rem;
   --space-5: 1.25rem;
   --space-6: 1.5rem;
@@ -51,8 +51,8 @@
   --ui-w: 700;
 
   /* === Transitions & Focus === */
-  --t-base: 180ms cubic-bezier(.2,.8,.2,1);
-  --focus-ring: 0 0 0 3px rgba(230,57,70,.18);
+  --t-base: 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --focus-ring: 0 0 0 3px rgba(230, 57, 70, 0.18);
 
   /* === Z-index === */
   --z-header: 100;
@@ -66,6 +66,8 @@
   --bp-xl: 1280px;
 }
 
-@media (prefers-reduced-motion: reduce){
-  :root { --t-base: 0ms linear; }
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-base: 0ms linear;
+  }
 }

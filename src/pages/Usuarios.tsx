@@ -1,26 +1,43 @@
+// src/pages/Usuarios.tsx
 import React, { useMemo, useRef, useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import Modal from "@/components/Modal";
 import { Protected } from "@/auth/Protected";
 import { useAuth } from "@/auth/AuthProvider";
-import { getUsers, createUser, deleteUser, type User } from "@/services/users";
 import "@/styles/usuarios.css";
 
-const MySwal = withReactContent(Swal);
+/** SweetAlert consistente con el resto */
+const MySwal = withReactContent(
+  Swal.mixin({
+    heightAuto: false,
+    backdrop: true,
+  })
+);
 
 type Draft = {
   nombre: string;
   apellido: string;
-  username: string;
+  username: string; // email
   password: string;
   role: "admin" | "user";
 };
 
+type UserRow = {
+  id: number;
+  nombre: string;
+  apellido: string;
+  email: string;
+  role: "admin" | "user";
+  is_active?: 0 | 1;
+};
+
 export default function Usuarios() {
-  const { user: me } = useAuth(); // para saber si quien crea es admin
-  const [rows, setRows] = useState<User[]>([]);
+  const { user: me } = useAuth();
+
+  const [rows, setRows] = useState<UserRow[]>([]);
   const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState<Draft>({
     nombre: "",
     apellido: "",
@@ -30,16 +47,62 @@ export default function Usuarios() {
   });
   const firstRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => { setRows(getUsers()); }, []);
+  async function loadUsers() {
+    try {
+      const res = await fetch("/api/users");
+      const raw = await res.json().catch(() => null);
 
-  const total = rows.length;
+      const list: unknown =
+        Array.isArray(raw) ? raw : Array.isArray(raw?.items) ? raw.items : [];
+
+      if (!Array.isArray(list)) throw new Error("Formato inesperado");
+      setRows(list as UserRow[]);
+    } catch (err) {
+      console.error(err);
+      setRows([]);
+      await MySwal.fire({
+        icon: "error",
+        title: "No se pudo cargar la lista",
+        text: "Intenta recargar la página.",
+        confirmButtonColor: "#c70000",
+      });
+    }
+  }
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  /** -------------------------
+   *   FILTRAR ADMIN LOGEADO
+   * ------------------------- */
+  const safeRows = Array.isArray(rows) ? rows : [];
+
+  const visibleRows = useMemo(() => {
+    if (me?.role === "admin" && typeof me.id === "number") {
+      return safeRows.filter((u) => u.id !== me.id);
+    }
+    return safeRows;
+  }, [safeRows, me]);
+
+  const total = visibleRows.length;
+
   const rowsSorted = useMemo(
-    () => [...rows].sort((a, b) => a.nombre.localeCompare(b.nombre)),
-    [rows]
+    () =>
+      [...visibleRows].sort((a, b) =>
+        `${a.nombre} ${a.apellido}`.localeCompare(`${b.nombre} ${b.apellido}`)
+      ),
+    [visibleRows]
   );
 
   function openCreate() {
-    setDraft({ nombre: "", apellido: "", username: "", password: "", role: "user" });
+    setDraft({
+      nombre: "",
+      apellido: "",
+      username: "",
+      password: "",
+      role: "user",
+    });
     setOpen(true);
     setTimeout(() => firstRef.current?.focus(), 0);
   }
@@ -47,50 +110,79 @@ export default function Usuarios() {
   async function onSave() {
     const nombre = draft.nombre.trim();
     const apellido = draft.apellido.trim();
-    const username = draft.username.trim();
+    const email = draft.username.trim();
     const password = draft.password;
 
-    if (!nombre || !apellido || !username || !password) {
+    if (!nombre || !apellido || !email || !password) {
       await MySwal.fire({
         icon: "error",
         title: "Campos obligatorios",
-        text: "Nombre, Apellido, Usuario y Contraseña son requeridos.",
+        text: "Nombre, Apellido, Usuario (email) y Contraseña son requeridos.",
         confirmButtonColor: "#c70000",
       });
       return;
     }
 
-    // username único
-    const exists = getUsers().some(
-      (u) => u.username.toLowerCase() === username.toLowerCase()
-    );
-    if (exists) {
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      await MySwal.fire({
+        icon: "error",
+        title: "Usuario inválido",
+        text: "Escribe un correo electrónico válido.",
+        confirmButtonColor: "#c70000",
+      });
+      return;
+    }
+
+    const dup = safeRows.some((u) => u.email.toLowerCase() === email.toLowerCase());
+    if (dup) {
       await MySwal.fire({
         icon: "error",
         title: "Usuario en uso",
-        text: "El nombre de usuario ya está registrado.",
+        text: "Ese correo ya está registrado.",
         confirmButtonColor: "#c70000",
       });
       return;
     }
 
-    // Solo un admin puede asignar admin; si no lo es, fuerza 'user'
     const role: "admin" | "user" = me?.role === "admin" ? draft.role : "user";
 
-    createUser({ nombre, apellido, username, password, role });
-    setRows(getUsers());
-    setOpen(false);
+    try {
+      setSaving(true);
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, apellido, email, password, role }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || `HTTP ${res.status}`);
+      }
+      await loadUsers();
+      setOpen(false);
 
-    await MySwal.fire({
-      icon: "success",
-      title: "Usuario creado",
-      text: `${nombre} ${apellido} fue agregado como ${role === "admin" ? "Administrador" : "Operador"}.`,
-      confirmButtonColor: "#c70000",
-    });
+      await MySwal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "success",
+        title: "Usuario creado",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    } catch (err: any) {
+      console.error(err);
+      await MySwal.fire({
+        icon: "error",
+        title: "No se pudo crear",
+        text: err?.message || "Error inesperado",
+        confirmButtonColor: "#c70000",
+      });
+    } finally {
+      setSaving(false);
+    }
   }
 
-  async function onDelete(id: string) {
-    const target = rows.find((u) => u.id === id);
+  async function onDelete(id: number) {
+    const target = safeRows.find((u) => u.id === id);
     const ask = await MySwal.fire({
       title: "¿Eliminar usuario?",
       text: target ? `${target.nombre} ${target.apellido}` : "",
@@ -102,15 +194,31 @@ export default function Usuarios() {
     });
     if (!ask.isConfirmed) return;
 
-    deleteUser(id);
-    setRows(getUsers());
+    try {
+      const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || `HTTP ${res.status}`);
+      }
+      await loadUsers();
 
-    await MySwal.fire({
-      icon: "success",
-      title: "Eliminado",
-      text: "El usuario fue eliminado.",
-      confirmButtonColor: "#c70000",
-    });
+      await MySwal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "success",
+        title: "Usuario eliminado",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    } catch (err: any) {
+      console.error(err);
+      await MySwal.fire({
+        icon: "error",
+        title: "No se pudo eliminar",
+        text: err?.message || "Error inesperado",
+        confirmButtonColor: "#c70000",
+      });
+    }
   }
 
   return (
@@ -122,7 +230,7 @@ export default function Usuarios() {
 
       <Protected action="create" resource="usuarios">
         <button className="btn-primary crear-btn" onClick={openCreate}>
-          ➕ Crear usuario
+          + Crear usuario
         </button>
       </Protected>
 
@@ -140,7 +248,7 @@ export default function Usuarios() {
             {rowsSorted.map((u) => (
               <tr key={u.id}>
                 <td>{`${u.nombre} ${u.apellido}`}</td>
-                <td>{u.username}</td>
+                <td>{u.email}</td>
                 <td>
                   <span className={`chip chip--${u.role === "admin" ? "danger" : "neutral"}`}>
                     {u.role === "admin" ? "Administrador" : "Operador"}
@@ -157,14 +265,15 @@ export default function Usuarios() {
             ))}
             {rowsSorted.length === 0 && (
               <tr>
-                <td colSpan={4} className="usuarios-empty">No hay usuarios registrados.</td>
+                <td colSpan={4} className="usuarios-empty">
+                  No hay usuarios registrados.
+                </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Modal “Nuevo usuario” */}
       {open && (
         <Modal
           isOpen={open}
@@ -173,8 +282,12 @@ export default function Usuarios() {
           initialFocusRef={firstRef as React.RefObject<HTMLInputElement>}
           actions={
             <div className="btn-row spaced">
-              <button className="btn-primary" onClick={onSave}>Guardar</button>
-              <button className="btn-ghost" onClick={() => setOpen(false)}>Cancelar</button>
+              <button className="btn-primary" onClick={onSave} disabled={saving}>
+                {saving ? "Guardando…" : "Guardar"}
+              </button>
+              <button className="btn-ghost" onClick={() => setOpen(false)} disabled={saving}>
+                Cancelar
+              </button>
             </div>
           }
         >
@@ -202,10 +315,10 @@ export default function Usuarios() {
               </div>
 
               <div className="field-col">
-                <label htmlFor="username">Usuario</label>
+                <label htmlFor="username">Usuario (email)</label>
                 <input
                   id="username"
-                  type="text"
+                  type="email"
                   value={draft.username}
                   onChange={(e) =>
                     setDraft((d) => ({ ...d, username: e.target.value.trimStart() }))
@@ -225,7 +338,6 @@ export default function Usuarios() {
                 />
               </div>
 
-              {/* Selector de rol SOLO visible si el que crea es admin */}
               {me?.role === "admin" && (
                 <div className="field-col role-col">
                   <label>Permisos</label>

@@ -1,158 +1,372 @@
-/* === Modal de Bitácora (ANCHO Y CÓMODO) === */
-.modal .modal-content,
-.modal .modal-card,
-.modal-content {
-  width: min(1280px, 96vw);
-  max-width: none;
-  border-radius: 16px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
-  background: #fff; /* Fondo blanco limpio */
+/* =========================================================
+   BOTONES BASE (por si el proyecto no los define)
+   ========================================================= */
+.btn-primary{
+  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+  background: var(--brand-600, #c70000); color:#fff; border:none; border-radius:12px;
+  padding:.66rem 1.1rem; font-weight:800; cursor:pointer;
+  box-shadow: 0 10px 18px rgba(199,0,0,.18);
+  transition: filter .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.btn-primary:hover{ filter:brightness(.96); transform: translateY(-1px); }
+
+.btn-ghost{
+  background:#fff; color:var(--ink,#111);
+  border:1px solid var(--line,#e7e7e7); border-radius:12px;
+  padding:.66rem 1.1rem; font-weight:800; cursor:pointer;
+  transition: background .18s ease, border-color .18s ease;
+}
+.btn-ghost:hover{ background:#f7f7f7; border-color:#e0e0e0; }
+
+/* =========================================================
+   FORMULARIO MODAL: AGREGAR/EDITAR VEHÍCULO
+   (grid limpio 2 columnas -> 1 en móvil)
+   ========================================================= */
+.veh-form{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap:14px 16px;
+}
+.veh-form__item{ display:flex; flex-direction:column; gap:6px; }
+.veh-form__item--full{ grid-column: 1 / -1; }
+
+.veh-form__label{
+  font-weight:900; color: var(--ink,#111);
+}
+.veh-form__input,
+.veh-form textarea{
+  width:100%; box-sizing:border-box;
+  background:#fff; color: var(--ink,#111);
+  border:1.8px solid var(--line,#e7e7e7);
+  border-radius:12px; padding:12px 14px; font-size: .98rem;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.veh-form__input:focus,
+.veh-form textarea:focus{
+  outline:none; border-color: var(--brand,#e63946);
+  box-shadow: 0 0 0 3px rgba(230,57,70,.12);
 }
 
-.modal .modal-body,
-.modal-body,
-.modal .modal-card-body {
-  max-height: 80vh;
-  overflow: auto;
-  padding: 1.5rem;
+@media (max-width: 760px){
+  .veh-form{ grid-template-columns: 1fr; }
 }
 
-/* Cabecera de datos del vehículo */
-.bitacora-header {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px 32px;
-  margin-bottom: 18px;
-  font-size: 0.95rem;
+/* =========================================================
+   FORMULARIO MODAL: NUEVO MANTENIMIENTO
+   (dos columnas; campos largos ocupan fila completa)
+   ========================================================= */
+.mnt-form{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap:14px 16px;
 }
-.bitacora-header .label {
-  font-weight: 700;
-  color: #c70000;
+.mnt-item{ display:flex; flex-direction:column; gap:6px; }
+.mnt-item--full{ grid-column: 1 / -1; }
+
+.mnt-label{ font-weight:900; color: var(--ink,#111); }
+
+.mnt-input,
+.mnt-textarea{
+  width:100%; box-sizing:border-box;
+  background:#fff; color: var(--ink,#111);
+  border:1.8px solid var(--line,#e7e7e7);
+  border-radius:12px; padding:12px 14px; font-size:.98rem;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.mnt-input:focus,
+.mnt-textarea:focus{
+  outline:none; border-color: var(--brand,#e63946);
+  box-shadow: 0 0 0 3px rgba(230,57,70,.12);
 }
 
-/* Tabla de bitácora */
-.bitacora-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 6px;
-  border-radius: 8px;
-  overflow: hidden;
+/* input con icono al lado derecho */
+.mnt-input-icon{ position:relative; }
+.mnt-input-icon .mnt-input{ padding-right:42px; }
+.mnt-input-icon .mnt-icon{
+  position:absolute; right:12px; top:50%; transform: translateY(-50%);
+  opacity:.6; pointer-events:none;
 }
+
+@media (max-width:760px){
+  .mnt-form{ grid-template-columns:1fr; }
+}
+
+/* =========================================================
+   MODAL: DAR DE BAJA VEHÍCULO
+   ========================================================= */
+.veh-baja{ display:grid; gap:16px; }
+
+/* header */
+.veh-baja__header{
+  display:grid; grid-template-columns:64px 1fr; align-items:center; gap:14px;
+  padding:2px 0 0;
+}
+.veh-baja__icon{
+  width:64px; height:64px; border-radius:999px; display:grid; place-items:center;
+  border:3px solid rgba(199,0,0,.25); background:#fff5f5; color: var(--brand-600,#c70000);
+  font-size:32px; font-weight:900;
+}
+.veh-baja__title{ margin:0; font-size:1.35rem; font-weight:900; color: var(--brand-600,#c70000); }
+.veh-baja__subtitle{ margin:.2rem 0 0; color: var(--ink-3,#555); font-weight:700; }
+
+/* tarjeta datos vehículo */
+.veh-baja__info{
+  background:#fff; border:1px solid var(--line,#e7e7e7);
+  border-radius:12px; padding:12px 14px;
+  box-shadow: 0 1px 0 rgba(255,255,255,.6), inset 0 4px 10px rgba(0,0,0,.04);
+  display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:8px 18px;
+}
+.veh-baja__row{ display:flex; gap:8px; align-items:baseline; }
+.veh-baja__row .label{ font-weight:800; color: var(--ink-2,#333); min-width:88px; }
+.veh-baja__row .value{ font-weight:700; color: var(--ink,#111); }
+
+/* grupos / campos */
+.veh-baja__group{ display:grid; gap:8px; }
+.veh-baja__label{ font-weight:900; color: var(--brand-600,#c70000); }
+.veh-baja__help{ color: var(--ink-3,#666); font-weight:700; margin-left:.25rem; }
+
+/* select + textarea */
+.veh-baja__select,
+.veh-baja__textarea{
+  width:100%; max-width:100%; box-sizing:border-box; margin:0;
+  background:#fff; color: var(--ink,#111);
+  border:1.8px solid var(--line,#e7e7e7);
+  border-radius:12px; padding:12px 14px; font-size:.98rem;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.veh-baja__select{
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='%23c70000' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center; background-size:18px;
+}
+.veh-baja__textarea{ min-height:120px; resize:vertical; }
+.veh-baja__select:focus,
+.veh-baja__textarea:focus{
+  outline:none; border-color: var(--brand,#e63946);
+  box-shadow:0 0 0 3px rgba(230,57,70,.12);
+}
+.veh-baja__counter{ text-align:right; color: var(--ink-3,#555); font-size:12.5px; }
+
+/* confirmación */
+.veh-baja__confirm{ display:flex; align-items:center; gap:10px; }
+.veh-baja__confirm input[type="checkbox"]{ width:18px; height:18px; accent-color: var(--brand-600,#c70000); }
+.veh-baja__confirm label{ font-weight:700; color: var(--ink,#111); }
+
+/* errores */
+.veh-baja__error{
+  text-align:center; color: var(--brand-600,#c70000);
+  font-weight:900; margin:4px 0 0;
+}
+.is-invalid{
+  border-color: var(--brand-600,#c70000) !important;
+  box-shadow: 0 0 0 3px rgba(199,0,0,.12) !important;
+}
+
+/* acciones (pegadas abajo del modal si hay scroll interno) */
+.veh-baja__actions{
+  position: sticky; bottom: -1px;
+  display:flex; justify-content:flex-end; gap:10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #fff 24%);
+  padding-top:8px;
+}
+
+/* responsive */
+@media (max-width:760px){
+  .veh-baja__header{ grid-template-columns:48px 1fr; }
+  .veh-baja__icon{ width:48px; height:48px; font-size:26px; }
+  .veh-baja__info{ grid-template-columns:1fr; }
+}
+
+/* =========================================================
+   TABLA DE BITÁCORA — centrar contenido
+   ========================================================= */
 .bitacora-table th,
-.bitacora-table td {
-  border: 1px solid #ddd;
-  padding: 0.6rem 0.75rem;
-  text-align: left;
-}
-.bitacora-table th {
-  background-color: #c70000;
-  color: #fff;
-  font-size: 0.8rem;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-.bitacora-table tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-.bitacora-empty {
-  text-align: center;
-  color: #666;
-  padding: 1rem;
+.bitacora-table td{
+  text-align:center !important;
+  vertical-align: middle;
 }
 
-/* Contenedor con scroll */
-.table-wrapper {
-  max-height: 55vh;
-  overflow-y: auto;
-  border-radius: 8px;
+/* Opcional: hace que la primera columna (fecha) quede centrada,
+   pero si prefieres a la izquierda, quita la línea de abajo. */
+/* .bitacora-table td:first-child, .bitacora-table th:first-child{ text-align:left !important; } */
+/* =========================================================
+   MODALES SIN SCROLL INTERNO (baja / mantenimiento / vehículo)
+   - Amplía el ancho útil y deja crecer el body sin overflow
+   - Compacta paddings / gaps para que quepa todo
+   ========================================================= */
+
+/* --- Aplicar sólo cuando el modal contiene esos formularios --- */
+.modal:has(.veh-baja) .modal-content,
+.modal:has(.mnt-form) .modal-content,
+.modal:has(.veh-form) .modal-content{
+  width: min(1200px, 98vw);   /* un poco más ancho */
 }
 
-/* =========================
-   Botones y Acciones
-   ========================= */
-.modal-actions,
-.form-mantenimiento .btn-row,
-.btn-row {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 16px; /* separación visible */
-  margin-top: 12px;
-  padding-top: 8px;
+/* Quita límite de altura y scroll interno del body de estos modales */
+.modal:has(.veh-baja) .modal-body,
+.modal:has(.mnt-form) .modal-body,
+.modal:has(.veh-form) .modal-body{
+  max-height: none;           /* sin tope de altura */
+  overflow: visible;          /* evita scroll interno */
+  padding-bottom: 12px;       /* pequeño respiro */
 }
 
-.modal-actions > * + *,
-.form-mantenimiento .btn-row > * + *,
-.btn-row > * + * {
-  margin-left: 0; /* Eliminamos duplicación de gap */
+/* Mantén acciones pegadas abajo pero sin "comerse" espacio extra */
+.modal:has(.veh-baja) .modal-actions,
+.modal:has(.mnt-form) .modal-actions,
+.modal:has(.veh-form) .modal-actions{
+  position: static;           /* deja de ser sticky */
+  margin-top: 8px;
 }
 
-/* Botones: estilos consistentes */
-button,
-.btn,
-.btn-primary,
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease;
-}
+/* =========================================================
+   COMPACTACIÓN DE CONTENIDOS (que todo quepa)
+   ========================================================= */
 
-.btn-primary {
-  background: #c70000;
-  color: #fff;
-  border: none;
-}
-.btn-primary:hover {
-  background: #a50000;
-  transform: translateY(-1px);
-}
-.btn-ghost {
-  background: #f4f4f4;
-  border: 1px solid #ddd;
-  color: #222;
-}
-.btn-ghost:hover {
-  background: #eaeaea;
-}
-
-/* Formulario de nuevo mantenimiento */
-.form-mantenimiento {
-  margin-top: 1rem;
-  display: grid;
+/* — Baja — */
+.veh-baja{ gap: 12px; }
+.veh-baja__header{
+  grid-template-columns: 56px 1fr;
   gap: 12px;
+  padding: 0;
 }
-.form-mantenimiento input {
-  padding: 0.45rem 0.6rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background: #fff;
-  color: #000;
-  font-size: 0.95rem;
-}
-.form-mantenimiento input:focus {
-  outline: none;
-  border-color: #c70000;
-  box-shadow: 0 0 0 2px rgba(199, 0, 0, 0.1);
+.veh-baja__icon{ width:56px; height:56px; font-size:28px; }
+.veh-baja__title{ font-size: 1.25rem; }
+.veh-baja__subtitle{ font-size: .95rem; }
+
+.veh-baja__info{
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 6px 14px;
+  padding: 10px 12px;
 }
 
-/* Título del modal */
-.modal .modal-title {
-  text-align: center;
-  color: #c70000;
-  font-weight: 700;
-  font-size: 1.3rem;
+.veh-baja__label{ font-size: .98rem; }
+.veh-baja__help{ font-size: .9rem; }
+
+.veh-baja__select,
+.veh-baja__textarea{
+  padding: 10px 12px;
+  font-size: .96rem;
+  border-radius: 10px;
+}
+.veh-baja__textarea{ min-height: 100px; }
+.veh-baja__counter{ font-size: 12px; }
+
+.veh-baja__confirm{ gap: 8px; }
+.veh-baja__confirm input[type="checkbox"]{ width:16px; height:16px; }
+.veh-baja__actions{ gap: 8px; padding-top: 4px; }
+
+/* — Nuevo mantenimiento — */
+.mnt-form{
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 12px 14px;
+}
+.mnt-item{ gap: 6px; }
+.mnt-label{ font-size: .98rem; }
+.mnt-input,
+.mnt-textarea{
+  padding: 10px 12px;
+  font-size: .96rem;
+  border-radius: 10px;
+}
+.mnt-input-icon .mnt-input{ padding-right: 38px; }
+.mnt-input-icon .mnt-icon{ right: 10px; }
+
+/* — Alta/Edición de vehículo — */
+.veh-form{
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 12px 14px;
+}
+.veh-form__item{ gap: 6px; }
+.veh-form__label{ font-size: .98rem; }
+.veh-form__input{
+  padding: 10px 12px;
+  font-size: .96rem;
+  border-radius: 10px;
 }
 
-/* Botonera de acciones rápidas */
-.bitacora-toolbar {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin: 10px 0 14px;
+/* =========================================================
+   RESPONSIVE (móvil: una columna y aún más compacto)
+   ========================================================= */
+@media (max-width: 760px){
+  .veh-baja__header{ grid-template-columns: 44px 1fr; gap: 10px; }
+  .veh-baja__icon{ width:44px; height:44px; font-size:22px; }
+  .veh-baja__title{ font-size: 1.1rem; }
+  .veh-baja__subtitle{ font-size: .9rem; }
+
+  .veh-baja__info{ grid-template-columns: 1fr; gap: 6px 10px; padding: 8px 10px; }
+  .veh-baja__textarea{ min-height: 92px; }
+
+  .mnt-form, .veh-form{ grid-template-columns: 1fr; gap: 10px 12px; }
+
+  .modal:has(.veh-baja) .modal-content,
+  .modal:has(.mnt-form) .modal-content,
+  .modal:has(.veh-form) .modal-content{
+    width: min(1000px, 98vw); /* en móvil el ancho ya es la pantalla */
+  }
+}
+/* =========================================================
+   BITÁCORA RESPONSIVA
+   ========================================================= */
+
+/* Scroll horizontal en pantallas pequeñas */
+.table-wrapper {
+  overflow-x: auto;
+}
+.bitacora-table {
+  min-width: 700px; /* evita que se colapse demasiado */
+}
+
+/* Convertir tabla en tarjetas en móvil */
+@media (max-width: 600px) {
+  .bitacora-table thead {
+    display: none;
+  }
+  .bitacora-table tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0.5rem;
+    background: #fff;
+  }
+  .bitacora-table td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+    font-size: 0.9rem;
+  }
+  .bitacora-table td:last-child {
+    justify-content: flex-end;
+  }
+}
+
+/* =========================================================
+   TOOLBAR DE BOTONES RESPONSIVA
+   ========================================================= */
+@media (max-width: 600px) {
+  .bitacora-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .bitacora-toolbar .btn,
+  .bitacora-toolbar .btn-primary {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   MODAL RESPONSIVO EXTRA PEQUEÑO
+   ========================================================= */
+@media (max-width: 480px) {
+  .modal-content {
+    border-radius: 0;   /* ocupa toda la pantalla */
+    height: 100vh;      /* altura completa */
+    max-height: 100vh;
+  }
+  .modal-body {
+    padding: 12px;
+    overflow-y: auto;   /* scroll si es necesario */
+  }
 }

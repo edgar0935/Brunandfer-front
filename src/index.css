@@ -13,7 +13,9 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   min-height: 100%;
   /* evita scroll horizontal por el drawer */
@@ -22,20 +24,34 @@ html, body, #root {
 
 body {
   margin: 0;
-  display: block;     /* no aplastar contenido scrolleable */
+  display: block; /* no aplastar contenido scrolleable */
   min-width: 320px;
   background: #242424;
 }
 
+/* ======================
+   Links
+   ====================== */
 a {
   font-weight: 500;
   color: #646cff;
   text-decoration: inherit;
 }
-a:hover { color: #535bf2; }
+a:hover {
+  color: #535bf2;
+}
 
-h1 { font-size: 3.2em; line-height: 1.1; }
+/* ======================
+   Headings
+   ====================== */
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
 
+/* ======================
+   Buttons
+   ====================== */
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -47,11 +63,91 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
-button:hover { border-color: #646cff; }
-button:focus, button:focus-visible { outline: 4px auto -webkit-focus-ring-color; }
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
 
+/* ======================
+   Light mode overrides
+   ====================== */
 @media (prefers-color-scheme: light) {
-  :root { color: #213547; background-color: #ffffff; }
-  a:hover { color: #747bff; }
-  button { background-color: #f9f9f9; }
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+/* ==========================
+   SweetAlert2 Toasts Custom
+   ========================== */
+
+/* Posición */
+.swal2-container.swal2-top-end {
+  top: 1rem !important;
+  right: 1rem !important;
+}
+
+/* Base del toast */
+.swal2-popup.swal2-toast {
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-family: var(--font, system-ui, sans-serif);
+  font-weight: 600;
+  box-shadow: var(--shadow-2);
+}
+
+/* Icono de éxito */
+.swal2-popup.swal2-toast .swal2-success {
+  border-color: #c70000; /* borde rojo */
+  color: #c70000; /* icono rojo */
+}
+
+/* Fondo blanco + borde rojo en éxito */
+.swal2-popup.swal2-toast.swal2-icon-success {
+  background: #fff;
+  color: #222;
+  border: 2px solid #c70000;
+}
+
+/* Texto */
+.swal2-popup.swal2-toast .swal2-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #222;
+}
+
+/* Animaciones */
+.swal2-show {
+  animation: fadeInUp 0.25s ease-out;
+}
+.swal2-hide {
+  animation: fadeOut 0.2s ease-in;
+}
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
